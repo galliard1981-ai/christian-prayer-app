@@ -615,11 +615,18 @@ let firstPassDone = false;
 const NativeVibrate = (window.Capacitor && typeof window.Capacitor.registerPlugin === 'function')
   ? window.Capacitor.registerPlugin('Vibrate')
   : null;
+// Fallback: αν το registerPlugin δεν υπάρχει σε αυτό το build, δοκιμάζουμε
+// απευθείας το Plugins.Vibrate (σε περίπτωση που το Capacitor το έχει ήδη
+// εκθέσει εκεί χωρίς να χρειάζεται ρητή registerPlugin() κλήση).
+const DirectVibratePlugin = (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Vibrate)
+  ? window.Capacitor.Plugins.Vibrate
+  : null;
+const VibratePluginProxy = NativeVibrate || DirectVibratePlugin;
 function vibrate(p) {
-  if (NativeVibrate) {
+  if (VibratePluginProxy) {
     try {
-      if (Array.isArray(p)) NativeVibrate.vibrate({ pattern: p });
-      else NativeVibrate.vibrate({ duration: p });
+      if (Array.isArray(p)) VibratePluginProxy.vibrate({ pattern: p });
+      else VibratePluginProxy.vibrate({ duration: p });
     } catch (e) {}
     return true;
   }
@@ -633,12 +640,27 @@ function vibrate(p) {
    plugin (αν υπάρχει vibrator, αν πέταξε σφάλμα, SDK/κατασκευαστής) — ώστε
    να ξέρουμε με βεβαιότητα τι συμβαίνει αντί να μαντεύουμε. */
 async function runVibrationDiagnostic() {
-  const platform = (window.Capacitor && typeof window.Capacitor.getPlatform === 'function')
-    ? window.Capacitor.getPlatform() : 'web';
-  let lines = ['platform: ' + platform, 'NativeVibrate: ' + (NativeVibrate ? 'yes' : 'no')];
-  if (NativeVibrate) {
+  const cap = window.Capacitor;
+  const platform = (cap && typeof cap.getPlatform === 'function') ? cap.getPlatform() : 'web';
+  let lines = ['platform: ' + platform, 'window.Capacitor: ' + (cap ? 'yes' : 'no')];
+  if (cap) {
+    lines.push('Capacitor keys: ' + Object.keys(cap).join(', '));
+    lines.push('typeof registerPlugin: ' + typeof cap.registerPlugin);
+    if (cap.Plugins) {
+      lines.push('Plugins keys: ' + Object.keys(cap.Plugins).join(', '));
+      lines.push('typeof Plugins.Vibrate: ' + typeof cap.Plugins.Vibrate);
+    } else {
+      lines.push('Plugins: (none)');
+    }
+  }
+  lines.push('NativeVibrate: ' + (NativeVibrate ? 'yes' : 'no'));
+  // Δοκιμή απευθείας μέσω Plugins.Vibrate, αν υπάρχει, ανεξάρτητα από registerPlugin
+  const directPlugin = (cap && cap.Plugins && cap.Plugins.Vibrate) ? cap.Plugins.Vibrate : null;
+  const target = NativeVibrate || directPlugin;
+  lines.push('χρησιμοποιείται: ' + (NativeVibrate ? 'NativeVibrate (registerPlugin)' : (directPlugin ? 'Plugins.Vibrate (άμεσα)' : 'κανένα — μόνο navigator.vibrate')));
+  if (target) {
     try {
-      const res = await NativeVibrate.vibrate({ duration: 250 });
+      const res = await target.vibrate({ duration: 250 });
       lines.push('--- απάντηση native plugin ---');
       Object.keys(res || {}).forEach(k => lines.push(k + ': ' + res[k]));
     } catch (e) {
