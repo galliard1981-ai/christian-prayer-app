@@ -603,14 +603,20 @@ let firstPassDone = false;
    αξιόπιστα ακόμα και σε συσκευές (π.χ. ορισμένα Xiaomi/MIUI) όπου το
    navigator.vibrate() μέσα σε WebView/Chrome αναφέρει επιτυχία αλλά το
    λειτουργικό σβήνει σιωπηλά την πραγματική δόνηση.
-   Αν η εφαρμογή ανοίγει απλά σε browser (π.χ. για δοκιμή), κάνουμε fallback
-   στο κανονικό navigator.vibrate(). */
+   Αν η εφαρμογή ανοίγει απλά σε browser/PWA, κάνουμε fallback στο κανονικό
+   navigator.vibrate().
+   Σημείωση: το Capacitor δεν εκθέτει αυτόματα τα native plugins σε
+   window.Capacitor.Plugins — πρέπει να γίνει ρητή registerPlugin() μία
+   φορά, αλλιώς η κλήση σιωπηλά αποτυγχάνει και κάνει fallback στο
+   navigator.vibrate() (το ίδιο πρόβλημα που θέλαμε να λύσουμε). */
+const NativeVibrate = (window.Capacitor && typeof window.Capacitor.registerPlugin === 'function')
+  ? window.Capacitor.registerPlugin('Vibrate')
+  : null;
 function vibrate(p) {
-  const nativeVibrate = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Vibrate;
-  if (nativeVibrate) {
+  if (NativeVibrate) {
     try {
-      if (Array.isArray(p)) nativeVibrate.vibrate({ pattern: p });
-      else nativeVibrate.vibrate({ duration: p });
+      if (Array.isArray(p)) NativeVibrate.vibrate({ pattern: p });
+      else NativeVibrate.vibrate({ duration: p });
     } catch (e) {}
     return true;
   }
