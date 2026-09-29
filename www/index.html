@@ -1132,7 +1132,6 @@ function closeSettings() { overlay.classList.remove('open'); }
 $('settings-btn').addEventListener('click', openSettings);
 $('close-settings').addEventListener('click', closeSettings);
 overlay.addEventListener('click', e => { if (e.target === overlay) closeSettings(); });
-$('vib-diag-btn').addEventListener('click', runVibrationDiagnostic);
 $('reset-btn').addEventListener('click', () => {
   if (!confirm(T().confirmReset)) return;
   finalizeAnim(); clearOverride(); clearTimeout(idleTimer);
