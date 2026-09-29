@@ -1,6 +1,7 @@
 package com.galliard.christianprayer;
 
 import android.content.Context;
+import android.media.AudioAttributes;
 import android.os.Build;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
@@ -20,9 +21,22 @@ import com.getcapacitor.annotation.CapacitorPlugin;
  * Xiaomi/MIUI devices, silently succeeds at the Chrome/WebView layer while the
  * OS suppresses the actual hardware vibration). Native calls go straight to
  * the platform Vibrator API, which is the reliable path across OEM skins.
+ *
+ * Every call is tagged with AudioAttributes.USAGE_NOTIFICATION_EVENT instead
+ * of leaving the usage unset. An untagged vibration defaults to "unknown"
+ * usage, which many OEM skins (e.g. MIUI) bucket under the phone's "Touch
+ * vibration" toggle — the same one that governs keyboard/UI tap buzz — so a
+ * user who has turned that off (without meaning to silence this app) gets no
+ * vibration at all. Tagging as a notification-style event makes these
+ * vibrations follow the notification/alarm vibration switch instead, which is
+ * on by default and is a channel users are far less likely to have disabled.
  */
 @CapacitorPlugin(name = "Vibrate")
 public class VibratePlugin extends Plugin {
+
+    private static final AudioAttributes VIB_ATTRS = new AudioAttributes.Builder()
+        .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+        .build();
 
     private Vibrator getVibrator() {
         Context ctx = getContext();
@@ -65,16 +79,16 @@ public class VibratePlugin extends Plugin {
                     timings[i + 1] = patternArr.getLong(i);
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    vibrator.vibrate(VibrationEffect.createWaveform(timings, -1));
+                    vibrator.vibrate(VibrationEffect.createWaveform(timings, -1), VIB_ATTRS);
                 } else {
-                    vibrator.vibrate(timings, -1);
+                    vibrator.vibrate(timings, -1, VIB_ATTRS);
                 }
             } else {
                 long d = duration != null ? duration : 40L;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    vibrator.vibrate(VibrationEffect.createOneShot(d, VibrationEffect.DEFAULT_AMPLITUDE));
+                    vibrator.vibrate(VibrationEffect.createOneShot(d, VibrationEffect.DEFAULT_AMPLITUDE), VIB_ATTRS);
                 } else {
-                    vibrator.vibrate(d);
+                    vibrator.vibrate(d, VIB_ATTRS);
                 }
             }
             call.resolve();
