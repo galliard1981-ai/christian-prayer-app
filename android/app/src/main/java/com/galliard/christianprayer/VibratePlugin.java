@@ -8,6 +8,7 @@ import android.os.Vibrator;
 import android.os.VibratorManager;
 
 import com.getcapacitor.JSArray;
+import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
@@ -59,9 +60,23 @@ public class VibratePlugin extends Plugin {
      */
     @PluginMethod
     public void vibrate(PluginCall call) {
+        JSObject ret = new JSObject();
+        ret.put("sdkInt", Build.VERSION.SDK_INT);
+        ret.put("manufacturer", Build.MANUFACTURER);
+
         Vibrator vibrator = getVibrator();
-        if (vibrator == null || !vibrator.hasVibrator()) {
-            call.resolve();
+        boolean hasVibrator = vibrator != null && vibrator.hasVibrator();
+        ret.put("hasVibrator", hasVibrator);
+        if (vibrator != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            try {
+                ret.put("hasAmplitudeControl", vibrator.hasAmplitudeControl());
+            } catch (Exception ignored) {}
+        }
+
+        if (!hasVibrator) {
+            ret.put("ok", false);
+            ret.put("reason", "no-vibrator-hardware");
+            call.resolve(ret);
             return;
         }
 
@@ -91,9 +106,14 @@ public class VibratePlugin extends Plugin {
                     vibrator.vibrate(d, VIB_ATTRS);
                 }
             }
-            call.resolve();
+            ret.put("ok", true);
+            ret.put("calledVibrate", true);
+            call.resolve(ret);
         } catch (Exception e) {
-            call.reject("vibrate failed: " + e.getMessage());
+            ret.put("ok", false);
+            ret.put("calledVibrate", true);
+            ret.put("error", String.valueOf(e.getMessage()));
+            call.resolve(ret);
         }
     }
 }
