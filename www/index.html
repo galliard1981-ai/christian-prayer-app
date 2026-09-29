@@ -388,6 +388,8 @@ select, input[type="text"] {
     <label class="row"><span class="txt" data-i18n="sound"></span><input type="checkbox" class="switch" data-key="sound"></label>
     <label class="row"><span class="txt"><span data-i18n="remind"></span><span class="hint" data-i18n="remindHint"></span></span><input type="checkbox" class="switch" data-key="remind"></label>
     <label class="row" id="row-strong"><span class="txt"><span data-i18n="remindStrong"></span><span class="hint" data-i18n="remindStrongHint"></span></span><input type="checkbox" class="switch" data-key="remindStrong"></label>
+    <label class="row" id="row-remind-sound"><span class="txt" data-i18n="remindSound"></span><input type="checkbox" class="switch" data-key="remindSound"></label>
+    <div class="note" id="vib-hint-note" data-i18n="vibHintNote"></div>
     <label class="row"><span class="txt" data-i18n="wakeLock"></span><input type="checkbox" class="switch" data-key="wakeLock"></label>
     <label class="row"><span class="txt"><span data-i18n="langLabel"></span><span class="hint" data-i18n="langHint"></span></span>
       <select data-key="lang" id="lang-select"></select>
@@ -400,9 +402,6 @@ select, input[type="text"] {
       </select>
     </label>
     <div class="note" id="vib-note" data-i18n="vibNote" hidden></div>
-    <div class="sheet-actions">
-      <button class="btn" id="vib-diag-btn" data-i18n="vibDiagBtn"></button>
-    </div>
     <div class="support-block">
       <div class="support-title" data-i18n="supportTitle"></div>
       <div class="support-desc" data-i18n="supportDesc"></div>
@@ -498,8 +497,8 @@ const BIG_PRAYERS = {
 
 /* ---------- Μεταφράσεις διεπαφής (ενιαία γλώσσα για όλη την εφαρμογή) ---------- */
 const STR = {
-  en: { tabName_ortho:'Prayer Rope', tabAria_ortho:'Orthodox prayer rope', tabName_rosary:'Rosary', tabAria_rosary:'Catholic rosary', undo:'Undo', toggleTheme:'Toggle theme', settingsAria:'Settings', prayerSelectAria:'Prayer', countKnots:'Knots', countRosariesOrtho:'Ropes', countBead:'Bead', countDecade:'Decade', countRosariesR:'Rosaries', optgroupPrayers:'Prayers', optgroupMine:'My own', freeOption:'✎ Write your own…', inputPlaceholder:'Write your prayer…', save:'Save', deletePrayer:'Delete this prayer', confirmDelete:'Delete this prayer?', settingsTitle:'Settings', hapticBead:'Micro-vibration on each knot / bead', hapticComplete:'Completion vibration', hapticCompleteHint:'33 knots, a decade, or a full rope/rosary', sound:'Bead / knot click sound', remind:'Remind me if I drift off', remindHint:'Fires once twice the pace of your last two beads has passed', remindStrong:'Stronger reminder vibration', remindStrongHint:"A longer buzz, so you're sure to notice it", wakeLock:'Keep screen on', langLabel:'Language', langHint:'Applies throughout the app', bigPrayerLabel:'Prayer on the large bead', bigPrayerHint:'Before each decade', bigPater:'Our Father', bigGloria:'Glory Be', bigNone:'None', vibNote:"This device/browser doesn't support vibration (e.g. iOS Safari). Use the sound option instead.", vibDiagBtn:'Test vibration', resetBtn:'Reset counters', confirmReset:'Reset the counters for this prayer?', close:'Close', startHint:'Swipe up or down to begin', supportTitle:'Support this app', supportDesc:'If this app helps your prayer, you can leave a small voluntary gift. It is entirely optional and never required.', supportSafeNote:'🔒 Opens a secure Stripe payment page in a new tab — the same trusted payment processor used by millions of businesses worldwide. This app never sees or stores your card or payment details.', supportBtn:'🙏 Leave a blessing', supportConfirmText:"Choose an amount to open a secure payment page in a new tab:", supportCancel:'Cancel', supportThanks:'Thank you — glory to God for your generosity.' },
-  el: { tabName_ortho:'Κομποσχοίνι', tabAria_ortho:'Ορθόδοξο κομποσχοίνι', tabName_rosary:'Ροζάριο', tabAria_rosary:'Καθολικό ροζάριο', undo:'Αναίρεση', toggleTheme:'Εναλλαγή θέματος', settingsAria:'Ρυθμίσεις', prayerSelectAria:'Προσευχή', countKnots:'Κόμποι', countRosariesOrtho:'Κομποσχοίνια', countBead:'Χάνδρα', countDecade:'Δεκάδα', countRosariesR:'Ροζάρια', optgroupPrayers:'Προσευχές', optgroupMine:'Δικές μου', freeOption:'✎ Γράψε τη δική σου…', inputPlaceholder:'Γράψε την προσευχή σου…', save:'Αποθήκευση', deletePrayer:'Διαγραφή αυτής της προσευχής', confirmDelete:'Διαγραφή αυτής της προσευχής;', settingsTitle:'Ρυθμίσεις', hapticBead:'Μικροδόνηση σε κάθε κόμπο / χάνδρα', hapticComplete:'Δόνηση ολοκλήρωσης', hapticCompleteHint:'33 κόμποι, δεκάδα ή ολόκληρο κομποσχοίνι/ροζάριο', sound:'Ήχος χάνδρας / κόμπου', remind:'Υπενθύμιση όταν ξεχαστείς', remindHint:'Όταν περάσει διπλάσιος χρόνος από τον ρυθμό των δύο τελευταίων κόμπων', remindStrong:'Ισχυρότερη δόνηση υπενθύμισης', remindStrongHint:'Πιο μακριά δόνηση, για να την καταλάβεις σίγουρα', wakeLock:'Να μένει αναμμένη η οθόνη', langLabel:'Γλώσσα', langHint:'Ισχύει σε όλη την εφαρμογή', bigPrayerLabel:'Προσευχή στη μεγάλη χάνδρα', bigPrayerHint:'Πριν από κάθε δεκάδα', bigPater:'Πάτερ ημών', bigGloria:'Δόξα Πατρί', bigNone:'Καμία', vibNote:'Η συσκευή/πρόγραμμα περιήγησης δεν υποστηρίζει δόνηση (π.χ. iOS Safari). Χρησιμοποίησε τον ήχο ως εναλλακτική.', vibDiagBtn:'Δοκιμή δόνησης', resetBtn:'Μηδενισμός μετρητών', confirmReset:'Μηδενισμός των μετρητών για αυτή την προσευχή;', close:'Κλείσιμο', startHint:'Σύρε πάνω ή κάτω για να ξεκινήσεις', supportTitle:'Υποστήριξε την εφαρμογή', supportDesc:'Αν η εφαρμογή σε βοηθά στην προσευχή, μπορείς να αφήσεις μια μικρή, προαιρετική προσφορά. Δεν είναι ποτέ υποχρεωτική.', supportSafeNote:'🔒 Ανοίγει μια ασφαλή σελίδα πληρωμής Stripe σε νέα καρτέλα — τον ίδιο αξιόπιστο πάροχο πληρωμών που χρησιμοποιούν εκατομμύρια επιχειρήσεις παγκοσμίως. Η εφαρμογή δεν βλέπει και δεν αποθηκεύει ποτέ στοιχεία κάρτας ή πληρωμής.', supportBtn:'🙏 Άφησε μια ευλογία', supportConfirmText:'Διάλεξε ένα ποσό για να ανοίξει μια ασφαλής σελίδα πληρωμής σε νέα καρτέλα:', supportCancel:'Άκυρο', supportThanks:'Ευχαριστούμε — δόξα τω Θεώ για τη γενναιοδωρία σου.' },
+  en: { tabName_ortho:'Prayer Rope', tabAria_ortho:'Orthodox prayer rope', tabName_rosary:'Rosary', tabAria_rosary:'Catholic rosary', undo:'Undo', toggleTheme:'Toggle theme', settingsAria:'Settings', prayerSelectAria:'Prayer', countKnots:'Knots', countRosariesOrtho:'Ropes', countBead:'Bead', countDecade:'Decade', countRosariesR:'Rosaries', optgroupPrayers:'Prayers', optgroupMine:'My own', freeOption:'✎ Write your own…', inputPlaceholder:'Write your prayer…', save:'Save', deletePrayer:'Delete this prayer', confirmDelete:'Delete this prayer?', settingsTitle:'Settings', hapticBead:'Micro-vibration on each knot / bead', hapticComplete:'Completion vibration', hapticCompleteHint:'33 knots, a decade, or a full rope/rosary', sound:'Bead / knot click sound', remind:'Remind me if I drift off', remindHint:'Fires once twice the pace of your last two beads has passed', remindStrong:'Stronger reminder vibration', remindStrongHint:"A longer buzz, so you're sure to notice it", remindSound:'Reminder sound (also plays if vibration is blocked)', remindNotifTitle:'Christian Prayer', remindNotifText:"You've paused — tap to continue", vibHintNote:'Vibration on each knot/bead needs your phone’s "touch vibration" setting turned on. The drift-off reminder above works either way.', wakeLock:'Keep screen on', langLabel:'Language', langHint:'Applies throughout the app', bigPrayerLabel:'Prayer on the large bead', bigPrayerHint:'Before each decade', bigPater:'Our Father', bigGloria:'Glory Be', bigNone:'None', vibNote:"This device/browser doesn't support vibration (e.g. iOS Safari). Use the sound option instead.", resetBtn:'Reset counters', confirmReset:'Reset the counters for this prayer?', close:'Close', startHint:'Swipe up or down to begin', supportTitle:'Support this app', supportDesc:'If this app helps your prayer, you can leave a small voluntary gift. It is entirely optional and never required.', supportSafeNote:'🔒 Opens a secure Stripe payment page in a new tab — the same trusted payment processor used by millions of businesses worldwide. This app never sees or stores your card or payment details.', supportBtn:'🙏 Leave a blessing', supportConfirmText:"Choose an amount to open a secure payment page in a new tab:", supportCancel:'Cancel', supportThanks:'Thank you — glory to God for your generosity.' },
+  el: { tabName_ortho:'Κομποσχοίνι', tabAria_ortho:'Ορθόδοξο κομποσχοίνι', tabName_rosary:'Ροζάριο', tabAria_rosary:'Καθολικό ροζάριο', undo:'Αναίρεση', toggleTheme:'Εναλλαγή θέματος', settingsAria:'Ρυθμίσεις', prayerSelectAria:'Προσευχή', countKnots:'Κόμποι', countRosariesOrtho:'Κομποσχοίνια', countBead:'Χάνδρα', countDecade:'Δεκάδα', countRosariesR:'Ροζάρια', optgroupPrayers:'Προσευχές', optgroupMine:'Δικές μου', freeOption:'✎ Γράψε τη δική σου…', inputPlaceholder:'Γράψε την προσευχή σου…', save:'Αποθήκευση', deletePrayer:'Διαγραφή αυτής της προσευχής', confirmDelete:'Διαγραφή αυτής της προσευχής;', settingsTitle:'Ρυθμίσεις', hapticBead:'Μικροδόνηση σε κάθε κόμπο / χάνδρα', hapticComplete:'Δόνηση ολοκλήρωσης', hapticCompleteHint:'33 κόμποι, δεκάδα ή ολόκληρο κομποσχοίνι/ροζάριο', sound:'Ήχος χάνδρας / κόμπου', remind:'Υπενθύμιση όταν ξεχαστείς', remindHint:'Όταν περάσει διπλάσιος χρόνος από τον ρυθμό των δύο τελευταίων κόμπων', remindStrong:'Ισχυρότερη δόνηση υπενθύμισης', remindStrongHint:'Πιο μακριά δόνηση, για να την καταλάβεις σίγουρα', remindSound:'Ήχος υπενθύμισης (παίζει και αν η δόνηση μπλοκάρεται)', remindNotifTitle:'Christian Prayer', remindNotifText:'Σταμάτησες — πάτησε για να συνεχίσεις', vibHintNote:'Η δόνηση σε κάθε κόμπο/χάνδρα χρειάζεται ενεργή τη ρύθμιση "δόνηση αφής" του τηλεφώνου σου. Η υπενθύμιση παραπάνω δουλεύει σε κάθε περίπτωση.', wakeLock:'Να μένει αναμμένη η οθόνη', langLabel:'Γλώσσα', langHint:'Ισχύει σε όλη την εφαρμογή', bigPrayerLabel:'Προσευχή στη μεγάλη χάνδρα', bigPrayerHint:'Πριν από κάθε δεκάδα', bigPater:'Πάτερ ημών', bigGloria:'Δόξα Πατρί', bigNone:'Καμία', vibNote:'Η συσκευή/πρόγραμμα περιήγησης δεν υποστηρίζει δόνηση (π.χ. iOS Safari). Χρησιμοποίησε τον ήχο ως εναλλακτική.', resetBtn:'Μηδενισμός μετρητών', confirmReset:'Μηδενισμός των μετρητών για αυτή την προσευχή;', close:'Κλείσιμο', startHint:'Σύρε πάνω ή κάτω για να ξεκινήσεις', supportTitle:'Υποστήριξε την εφαρμογή', supportDesc:'Αν η εφαρμογή σε βοηθά στην προσευχή, μπορείς να αφήσεις μια μικρή, προαιρετική προσφορά. Δεν είναι ποτέ υποχρεωτική.', supportSafeNote:'🔒 Ανοίγει μια ασφαλή σελίδα πληρωμής Stripe σε νέα καρτέλα — τον ίδιο αξιόπιστο πάροχο πληρωμών που χρησιμοποιούν εκατομμύρια επιχειρήσεις παγκοσμίως. Η εφαρμογή δεν βλέπει και δεν αποθηκεύει ποτέ στοιχεία κάρτας ή πληρωμής.', supportBtn:'🙏 Άφησε μια ευλογία', supportConfirmText:'Διάλεξε ένα ποσό για να ανοίξει μια ασφαλής σελίδα πληρωμής σε νέα καρτέλα:', supportCancel:'Άκυρο', supportThanks:'Ευχαριστούμε — δόξα τω Θεώ για τη γενναιοδωρία σου.' },
   fr: { tabName_ortho:'Corde à Prières', tabAria_ortho:'Corde à prières orthodoxe', tabName_rosary:'Chapelet', tabAria_rosary:'Chapelet catholique', undo:'Annuler', toggleTheme:'Changer de thème', settingsAria:'Réglages', prayerSelectAria:'Prière', countKnots:'Nœuds', countRosariesOrtho:'Cordes', countBead:'Grain', countDecade:'Dizaine', countRosariesR:'Chapelets', optgroupPrayers:'Prières', optgroupMine:'Les miennes', freeOption:'✎ Écris la tienne…', inputPlaceholder:'Écris ta prière…', save:'Enregistrer', deletePrayer:'Supprimer cette prière', confirmDelete:'Supprimer cette prière ?', settingsTitle:'Réglages', hapticBead:'Micro-vibration à chaque nœud / grain', hapticComplete:'Vibration de fin', hapticCompleteHint:'33 nœuds, une dizaine ou un chapelet complet', sound:'Son du grain / nœud', remind:'Me rappeler si je me perds', remindHint:"Se déclenche quand le double du rythme des deux derniers grains s'est écoulé", remindStrong:'Vibration de rappel plus forte', remindStrongHint:'Une vibration plus longue, pour être sûr de la remarquer', wakeLock:"Garder l'écran allumé", langLabel:'Langue', langHint:"S'applique à toute l'application", bigPrayerLabel:'Prière sur le grand grain', bigPrayerHint:'Avant chaque dizaine', bigPater:'Notre Père', bigGloria:'Gloire au Père', bigNone:'Aucune', vibNote:"Cet appareil/navigateur ne prend pas en charge la vibration (ex. iOS Safari). Utilise le son comme alternative.", resetBtn:'Réinitialiser les compteurs', confirmReset:'Réinitialiser les compteurs de cette prière ?', close:'Fermer', startHint:'Faites glisser vers le haut ou le bas pour commencer' },
   de: { tabName_ortho:'Gebetsschnur', tabAria_ortho:'Orthodoxe Gebetsschnur', tabName_rosary:'Rosenkranz', tabAria_rosary:'Katholischer Rosenkranz', undo:'Rückgängig', toggleTheme:'Thema wechseln', settingsAria:'Einstellungen', prayerSelectAria:'Gebet', countKnots:'Knoten', countRosariesOrtho:'Schnüre', countBead:'Perle', countDecade:'Dekade', countRosariesR:'Rosenkränze', optgroupPrayers:'Gebete', optgroupMine:'Eigene', freeOption:'✎ Eigenes schreiben…', inputPlaceholder:'Schreibe dein Gebet…', save:'Speichern', deletePrayer:'Dieses Gebet löschen', confirmDelete:'Dieses Gebet löschen?', settingsTitle:'Einstellungen', hapticBead:'Mikrovibration bei jedem Knoten / jeder Perle', hapticComplete:'Vibration bei Abschluss', hapticCompleteHint:'33 Knoten, eine Dekade oder ein vollständiger Rosenkranz', sound:'Klick-Ton bei Perle / Knoten', remind:'Erinnere mich, falls ich abschweife', remindHint:'Löst aus, wenn doppelt so viel Zeit wie beim letzten Rhythmus vergangen ist', remindStrong:'Stärkere Erinnerungsvibration', remindStrongHint:'Ein längeres Vibrieren, damit du es sicher merkst', wakeLock:'Bildschirm an lassen', langLabel:'Sprache', langHint:'Gilt für die ganze App', bigPrayerLabel:'Gebet an der großen Perle', bigPrayerHint:'Vor jeder Dekade', bigPater:'Vater unser', bigGloria:'Ehre sei dem Vater', bigNone:'Keines', vibNote:'Dieses Gerät/Browser unterstützt keine Vibration (z. B. iOS Safari). Nutze stattdessen den Ton.', resetBtn:'Zähler zurücksetzen', confirmReset:'Zähler für dieses Gebet zurücksetzen?', close:'Schließen', startHint:'Wische nach oben oder unten, um zu beginnen' },
   es: { tabName_ortho:'Cuerda de Oración', tabAria_ortho:'Cuerda de oración ortodoxa', tabName_rosary:'Rosario', tabAria_rosary:'Rosario católico', undo:'Deshacer', toggleTheme:'Cambiar tema', settingsAria:'Ajustes', prayerSelectAria:'Oración', countKnots:'Nudos', countRosariesOrtho:'Cuerdas', countBead:'Cuenta', countDecade:'Década', countRosariesR:'Rosarios', optgroupPrayers:'Oraciones', optgroupMine:'Mías', freeOption:'✎ Escribe la tuya…', inputPlaceholder:'Escribe tu oración…', save:'Guardar', deletePrayer:'Eliminar esta oración', confirmDelete:'¿Eliminar esta oración?', settingsTitle:'Ajustes', hapticBead:'Microvibración en cada nudo / cuenta', hapticComplete:'Vibración de finalización', hapticCompleteHint:'33 nudos, una década o un rosario completo', sound:'Sonido de cuenta / nudo', remind:'Avísame si me distraigo', remindHint:'Se activa cuando pasa el doble del ritmo de las dos últimas cuentas', remindStrong:'Vibración de aviso más fuerte', remindStrongHint:'Una vibración más larga, para que la notes seguro', wakeLock:'Mantener la pantalla encendida', langLabel:'Idioma', langHint:'Se aplica a toda la aplicación', bigPrayerLabel:'Oración en la cuenta grande', bigPrayerHint:'Antes de cada década', bigPater:'Padre Nuestro', bigGloria:'Gloria al Padre', bigNone:'Ninguna', vibNote:'Este dispositivo/navegador no admite vibración (p. ej. iOS Safari). Usa el sonido como alternativa.', resetBtn:'Reiniciar contadores', confirmReset:'¿Reiniciar los contadores de esta oración?', close:'Cerrar', startHint:'Desliza hacia arriba o abajo para comenzar' },
@@ -549,7 +548,7 @@ const defaults = () => ({
   mode: 'ortho',
   theme: (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark',
   lang: 'en',
-  settings: { hapticBead: true, hapticComplete: true, sound: false, remind: true, remindStrong: false, wakeLock: true, bigPrayer: 'pater' },
+  settings: { hapticBead: true, hapticComplete: true, sound: false, remind: true, remindStrong: false, remindSound: true, wakeLock: true, bigPrayer: 'pater' },
   selected: { ortho: 'b:0', rosary: 'b:0' },
   free: { ortho: '', rosary: '' },
   custom: [],
@@ -636,40 +635,36 @@ function vibrate(p) {
   return false;
 }
 
-/* Προσωρινό διαγνωστικό της δόνησης: δείχνει ακριβώς τι απαντάει το native
-   plugin (αν υπάρχει vibrator, αν πέταξε σφάλμα, SDK/κατασκευαστής) — ώστε
-   να ξέρουμε με βεβαιότητα τι συμβαίνει αντί να μαντεύουμε. */
-async function runVibrationDiagnostic() {
-  const cap = window.Capacitor;
-  const platform = (cap && typeof cap.getPlatform === 'function') ? cap.getPlatform() : 'web';
-  let lines = ['platform: ' + platform, 'window.Capacitor: ' + (cap ? 'yes' : 'no')];
-  if (cap) {
-    lines.push('Capacitor keys: ' + Object.keys(cap).join(', '));
-    lines.push('typeof registerPlugin: ' + typeof cap.registerPlugin);
-    if (cap.Plugins) {
-      lines.push('Plugins keys: ' + Object.keys(cap.Plugins).join(', '));
-      lines.push('typeof Plugins.Vibrate: ' + typeof cap.Plugins.Vibrate);
-    } else {
-      lines.push('Plugins: (none)');
-    }
-  }
-  lines.push('NativeVibrate: ' + (NativeVibrate ? 'yes' : 'no'));
-  // Δοκιμή απευθείας μέσω Plugins.Vibrate, αν υπάρχει, ανεξάρτητα από registerPlugin
-  const directPlugin = (cap && cap.Plugins && cap.Plugins.Vibrate) ? cap.Plugins.Vibrate : null;
-  const target = NativeVibrate || directPlugin;
-  lines.push('χρησιμοποιείται: ' + (NativeVibrate ? 'NativeVibrate (registerPlugin)' : (directPlugin ? 'Plugins.Vibrate (άμεσα)' : 'κανένα — μόνο navigator.vibrate')));
-  if (target) {
+/* Η υπενθύμιση "ξέχασες να συνεχίσεις" δεν χρησιμοποιεί το απευθείας
+   Vibrator API (VibratePluginProxy.vibrate) — σε ορισμένες συσκευές
+   (επιβεβαιωμένο σε πραγματικό Xiaomi/MIUI) η απευθείας κλήση αναφέρει
+   επιτυχία αλλά η συσκευή δεν δονείται καθόλου, όταν είναι κλειστή η
+   ρύθμιση "δόνηση αφής" — ανεξαρτήτως πώς χαρακτηρίζουμε τη δόνηση στον
+   κώδικα. Αντ' αυτού, στέλνουμε μια πραγματική ειδοποίηση συστήματος με
+   δόνηση πάνω στο κανάλι της (remindNotify) — περνάει από διαφορετικό
+   μηχανισμό δόνησης (κλήσεις/ειδοποιήσεις), που πολλοί χρήστες έχουν
+   ενεργό ακόμα κι όταν έχουν κλείσει τη δόνηση αφής. Χρησιμοποιείται μόνο
+   εδώ (το πολύ μία φορά ανά παύση), ποτέ ανά χάνδρα/κόμπο, ώστε να μην
+   γεμίζει ειδοποιήσεις. */
+async function notifyOrVibrate(pattern) {
+  if (VibratePluginProxy && typeof VibratePluginProxy.remindNotify === 'function') {
     try {
-      const res = await target.vibrate({ duration: 250 });
-      lines.push('--- απάντηση native plugin ---');
-      Object.keys(res || {}).forEach(k => lines.push(k + ': ' + res[k]));
-    } catch (e) {
-      lines.push('EXCEPTION: ' + (e && e.message ? e.message : e));
-    }
-  } else {
-    lines.push('navigator.vibrate: ' + (typeof navigator.vibrate === 'function'));
+      const res = await VibratePluginProxy.remindNotify({
+        title: T().remindNotifTitle,
+        text: T().remindNotifText
+      });
+      if (res && res.ok) return;
+    } catch (e) {}
   }
-  alert(lines.join('\n'));
+  vibrate(pattern);
+}
+let notifPermissionAsked = false;
+function ensureNotificationPermission() {
+  if (notifPermissionAsked) return;
+  notifPermissionAsked = true;
+  if (VibratePluginProxy && typeof VibratePluginProxy.requestNotificationPermission === 'function') {
+    try { VibratePluginProxy.requestNotificationPermission(); } catch (e) {}
+  }
 }
 
 let actx = null;
@@ -701,6 +696,12 @@ function chime() {
   if (!S.settings.sound) return;
   tone(660, 660, 0.6, 'sine', 0.25);
   tone(990, 990, 0.8, 'sine', 0.15, 0.12);
+}
+// Ξεχωριστός ήχος υπενθύμισης (ελέγχεται από το δικό του setting,
+// remindSound — όχι από το sound του κλικ ανά χάνδρα/κόμπο).
+function remindTone() {
+  tone(520, 340, 0.18, 'sine', 0.3);
+  tone(520, 340, 0.18, 'sine', 0.3, 0.22);
 }
 
 /* ---------- Οθόνη αναμμένη ---------- */
@@ -1000,7 +1001,8 @@ function scheduleReminder() {
 }
 function remind() {
   if (document.hidden) return;
-  vibrate(S.settings.remindStrong ? [150, 90, 150, 90, 260] : [40, 60, 40]);
+  notifyOrVibrate(S.settings.remindStrong ? [150, 90, 150, 90, 260] : [40, 60, 40]);
+  if (S.settings.remindSound) remindTone();
   rope.classList.remove('pulse'); void rope.offsetWidth; rope.classList.add('pulse');
   setTimeout(() => rope.classList.remove('pulse'), 600);
 }
@@ -1096,6 +1098,7 @@ function syncSettingsUI() {
     if (el.type === 'checkbox') el.checked = !!S.settings[k]; else el.value = S.settings[k];
   });
   $('row-strong').classList.toggle('disabled', !S.settings.remind);
+  $('row-remind-sound').classList.toggle('disabled', !S.settings.remind);
   $('vib-note').hidden = !!navigator.vibrate;
 }
 overlay.querySelectorAll('[data-key]').forEach(el => {
@@ -1111,7 +1114,11 @@ overlay.querySelectorAll('[data-key]').forEach(el => {
     if (k === 'hapticBead' && S.settings.hapticBead) vibrate(35);
     if (k === 'remindStrong' && S.settings.remindStrong) vibrate([150, 90, 150, 90, 260]);
     if (k === 'wakeLock') { S.settings.wakeLock ? requestWake() : releaseWake(); }
-    if (k === 'remind') { if (!S.settings.remind) clearTimeout(idleTimer); syncSettingsUI(); }
+    if (k === 'remind') {
+      if (!S.settings.remind) clearTimeout(idleTimer);
+      else ensureNotificationPermission();
+      syncSettingsUI();
+    }
     save();
   });
 });
@@ -1175,6 +1182,7 @@ applyMode();
 if ('ResizeObserver' in window) new ResizeObserver(() => buildSlots()).observe(rope);
 else window.addEventListener('resize', buildSlots);
 requestWake();
+if (S.settings.remind) ensureNotificationPermission();
 })();
 
 if ('serviceWorker' in navigator) {
