@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="ortho" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0d0f12">
+<meta name="description" content="A virtual prayer companion for the Christian prayer rope and rosary — Orthodox κομποσχοίνι and Catholic rosary in one app, with prayers in 20 languages.">
+<meta property="og:title" content="Christian Prayer — Rope & Rosary">
+<meta property="og:description" content="A virtual prayer companion for the Christian prayer rope and rosary — Orthodox κομποσχοίνι and Catholic rosary in one app.">
+<meta property="og:type" content="website">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Christian Prayer">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Christian Prayer — Rope & Rosary</title>
+<style>
+:root { --step: 52px; }
+
+:root[data-theme="dark"] {
+  --bg:#0d0f12; --fg:#f3f4f6; --muted:#9ca3af; --panel:#171a20; --border:#2b313b;
+  --accent:#fef08a; --focus:rgba(255,255,255,.06); --shadow:rgba(0,0,0,.6);
+}
+:root[data-theme="light"] {
+  --bg:#f6f1e7; --fg:#1f2937; --muted:#6b7280; --panel:#fffdf8; --border:#d9d0bd;
+  --accent:#92400e; --focus:rgba(0,0,0,.05); --shadow:rgba(0,0,0,.3);
+}
+/* Ορθόδοξο κομποσχοίνι — το συνηθισμένο μαύρο μαλλί, με ευδιάκριτο σχήμα μέσω φωτισμού */
+:root[data-mode="ortho"][data-theme="dark"] {
+  --bg:#14100c; --cord:#221b14; --cord-hi:#4c3f2e; --cord-lo:#070503; --hatch:rgba(0,0,0,.55);
+  --knot-hi:#5c5142; --knot-mid:#1c1712; --knot-lo:#020202; --metal:#d8c08a;
+}
+:root[data-mode="ortho"][data-theme="light"] {
+  --bg:#f6f1e7; --cord:#2a2520; --cord-hi:#4a4034; --cord-lo:#100d0a; --hatch:rgba(255,255,255,.14);
+  --knot-hi:#4a433b; --knot-mid:#1f1b16; --knot-lo:#050403; --metal:#6b5a3d;
+}
+/* Καθολικό ροζάριο */
+:root[data-mode="rosary"][data-theme="dark"] {
+  --bg:#0a0e1a; --cord:#94a3b8; --cord-hi:#e2e8f0; --cord-lo:#3f4c60; --accent:#fde68a; --panel:#131a2b; --border:#25304a;
+  --b-hi:#fffdf5; --b-mid:#d9d3c0; --b-lo:#8b8570;
+  --big-hi:#f87171; --big-mid:#b91c1c; --big-lo:#5f0f0f; --metal:#c7d2e6;
+}
+:root[data-mode="rosary"][data-theme="light"] {
+  --bg:#eaf0f9; --cord:#64748b; --cord-hi:#a9b6c8; --cord-lo:#33404f; --accent:#1e3a8a; --panel:#ffffff; --border:#c7d2e6; --fg:#0f172a;
+  --b-hi:#93c5fd; --b-mid:#1e40af; --b-lo:#0b1a4d;
+  --big-hi:#fca5a5; --big-mid:#b91c1c; --big-lo:#5f0f0f; --metal:#334155;
+}
+
+[hidden] { display: none !important; }
+* { -webkit-tap-highlight-color: transparent; }
+html, body {
+  margin: 0; padding: 0; height: 100%; width: 100%;
+  background: var(--bg); color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow: hidden; overscroll-behavior: none;
+  user-select: none; -webkit-user-select: none;
+  transition: background-color .3s, color .3s;
+}
+body { display: flex; flex-direction: column; align-items: center; }
+html[dir="rtl"] .counters, html[dir="rtl"] .row .txt { text-align: right; }
+
+header {
+  width: 100%; box-sizing: border-box; z-index: 10;
+  padding: max(env(safe-area-inset-top), 12px) 12px 0;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+}
+.topbar { width: 100%; max-width: 460px; display: flex; align-items: center; gap: 8px; }
+.tabs { flex: 1; display: flex; background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 3px; }
+.tab {
+  flex: 1; border: 0; background: transparent; color: var(--muted);
+  padding: 9px 6px; border-radius: 999px; font: inherit; font-size: .82rem; cursor: pointer;
+}
+.tab[aria-selected="true"] { background: var(--accent); color: var(--bg); font-weight: 600; }
+.icon-btn {
+  width: 38px; height: 38px; flex: none; border-radius: 50%;
+  border: 1px solid var(--border); background: var(--panel); color: var(--fg);
+  display: grid; place-items: center; cursor: pointer; padding: 0;
+}
+.icon-btn:disabled { opacity: .35; cursor: default; }
+.icon-btn svg { width: 20px; height: 20px; }
+:root[data-theme="dark"] .i-moon { display: none; }
+:root[data-theme="light"] .i-sun { display: none; }
+.counters { font-size: 1.05rem; letter-spacing: .5px; color: var(--muted); text-align: center; }
+.counters span { color: var(--fg); font-weight: bold; }
+
+#stage {
+  flex: 1; min-height: 0; width: 100%; position: relative;
+  display: flex; justify-content: center; touch-action: none; cursor: grab; overflow: hidden;
+}
+#stage::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 3;
+  background: radial-gradient(ellipse 60% 55% at 50% 42%, transparent 45%, color-mix(in srgb, var(--bg) 40%, black) 100%);
+}
+.glow {
+  position: absolute; top: 50%; left: 50%; width: 92%; height: 96%;
+  transform: translate(-50%, -50%); border-radius: 48%; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse 60% 90% at 50% 50%, color-mix(in srgb, var(--accent) 30%, transparent) 0%, color-mix(in srgb, var(--accent) 14%, transparent) 45%, transparent 78%);
+  filter: blur(28px);
+}
+:root[data-mode="ortho"][data-theme="dark"] .glow {
+  width: 96%; height: 98%; filter: blur(38px); opacity: 1;
+  background: radial-gradient(ellipse 65% 92% at 50% 50%, color-mix(in srgb, var(--accent) 38%, transparent) 0%, color-mix(in srgb, var(--accent) 18%, transparent) 42%, transparent 80%);
+}
+.pendant {
+  position: absolute; bottom: 5%; left: 50%; z-index: 0; opacity: .92;
+  transform-origin: top center; animation: sway 4.5s ease-in-out infinite;
+}
+@keyframes sway {
+  0%, 100% { transform: translateX(-50%) rotate(-3deg); }
+  50% { transform: translateX(-50%) rotate(3deg); }
+}
+.pendant svg { width: 26px; height: 40px; display: block; filter: drop-shadow(0 3px 4px var(--shadow)); }
+.start-hint {
+  position: absolute; top: 10%; left: 0; right: 0; text-align: center; z-index: 4;
+  color: var(--muted); font-size: .9rem; padding: 0 24px; pointer-events: none;
+  animation: hintPulse 2.2s ease-in-out infinite; transition: opacity .4s;
+}
+@keyframes hintPulse { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+.rope {
+  position: relative; width: 120px; height: 100%; overflow: hidden; z-index: 1;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 15%, #000 85%, transparent);
+          mask-image: linear-gradient(to bottom, transparent, #000 15%, #000 85%, transparent);
+}
+.rope.pulse { animation: pulse .55s ease; }
+@keyframes pulse { 50% { transform: scale(1.12); } }
+.cord { position: absolute; left: 50%; top: 0; bottom: 0; transform: translateX(-50%); z-index: 1; }
+:root[data-mode="ortho"] .cord {
+  width: 11px; border-radius: 5px;
+  background: repeating-linear-gradient(118deg,
+    var(--cord-hi) 0 3px, var(--cord) 3px 6px, var(--cord-lo) 6px 9px);
+  box-shadow: inset 2px 0 3px rgba(255,255,255,.12), inset -3px 0 4px rgba(0,0,0,.45);
+}
+:root[data-mode="ortho"][data-theme="dark"] .cord {
+  box-shadow: inset 2px 0 4px rgba(255,255,255,.2), inset -3px 0 5px rgba(0,0,0,.65), 0 0 10px rgba(0,0,0,.55);
+}
+:root[data-mode="rosary"] .cord {
+  width: 5px; border-radius: 3px;
+  background: repeating-linear-gradient(to bottom,
+    var(--cord-lo) 0 2px, var(--cord) 2px 6px, var(--cord-hi) 6px 8px, var(--cord) 8px 12px);
+  box-shadow: inset 1px 0 2px rgba(255,255,255,.2), inset -1px 0 2px rgba(0,0,0,.35);
+}
+#track { position: absolute; left: 0; right: 0; will-change: transform; z-index: 2; }
+.slot { height: var(--step); display: flex; align-items: center; justify-content: center; position: relative; }
+.slot:nth-child(odd) .knot, .slot:nth-child(odd) .bead { transform: rotate(-5deg); }
+.slot:nth-child(even) .knot, .slot:nth-child(even) .bead { transform: rotate(4deg); }
+
+.knot, .bead { position: relative; }
+.knot::before, .bead::before {
+  content: ""; position: absolute; left: 50%; bottom: -7px; z-index: -1;
+  width: 68%; height: 9px; transform: translateX(-50%);
+  border-radius: 50%; background: radial-gradient(ellipse, rgba(0,0,0,.5), transparent 72%);
+}
+.knot::after, .bead::after {
+  content: ""; position: absolute; top: 15%; left: 20%; width: 32%; height: 20%;
+  background: rgba(255,255,255,.55); border-radius: 50%; filter: blur(1px);
+}
+.knot {
+  width: 36px; height: 28px; border-radius: 50% / 46%;
+  background:
+    repeating-linear-gradient(60deg, var(--hatch) 0 2px, transparent 2px 6px),
+    repeating-linear-gradient(-60deg, var(--hatch) 0 2px, transparent 2px 6px),
+    radial-gradient(circle at 35% 30%, var(--knot-hi), var(--knot-mid) 60%, var(--knot-lo));
+  box-shadow: 0 4px 10px var(--shadow), inset 1px 1px 2px rgba(255,255,255,.2), inset -2px -2px 4px rgba(0,0,0,.4);
+}
+:root[data-mode="ortho"][data-theme="dark"] .knot {
+  box-shadow: 0 0 0 1px rgba(255,240,200,.06), 0 2px 6px rgba(254,240,138,.12), 0 6px 16px rgba(0,0,0,.8),
+    inset 1px 1px 2px rgba(255,245,220,.4), inset -3px -3px 6px rgba(0,0,0,.75);
+}
+:root[data-mode="ortho"][data-theme="dark"] .knot::after { background: rgba(255,247,225,.5); }
+.knot::after { background: rgba(255,255,255,.3); }
+.bead {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: radial-gradient(circle at 32% 26%, var(--b-hi), var(--b-mid) 55%, var(--b-lo));
+  box-shadow: 0 4px 10px var(--shadow), inset 2px 2px 3px rgba(255,255,255,.3), inset -3px -3px 5px rgba(0,0,0,.4);
+}
+.bead.big {
+  width: 40px; height: 40px;
+  background: radial-gradient(circle at 32% 26%, var(--big-hi), var(--big-mid) 55%, var(--big-lo));
+}
+.bead.big::after { width: 28%; height: 16%; background: rgba(255,255,255,.7); }
+
+.knot-cross {
+  position: relative; width: 26px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  filter: drop-shadow(0 3px 5px var(--shadow)) drop-shadow(0 0 4px color-mix(in srgb, var(--metal) 55%, transparent));
+}
+.knot-cross::before {
+  content: ""; position: absolute; left: 50%; bottom: -8px; z-index: -1;
+  width: 70%; height: 9px; transform: translateX(-50%);
+  border-radius: 50%; background: radial-gradient(ellipse, rgba(0,0,0,.5), transparent 72%);
+}
+
+.floating-prayer {
+  position: absolute; left: 0; right: 0; bottom: 12%; padding: 0 24px; box-sizing: border-box;
+  text-align: center; font-size: 1.25rem; font-weight: 600; color: var(--accent); pointer-events: none; z-index: 5;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--accent) 70%, transparent), 0 0 26px color-mix(in srgb, var(--accent) 45%, transparent);
+  opacity: 0; transform: translateY(0) scale(.82);
+}
+.floating-prayer::before {
+  content: ""; position: absolute; inset: -22px -12px; border-radius: 50%; z-index: -1; opacity: 0;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 35%, transparent), transparent 70%);
+}
+.floating-prayer.rise { animation: floatUp 2.3s cubic-bezier(.16,.84,.44,1) forwards; }
+.floating-prayer.rise::before { animation: burst 2.3s ease-out forwards; }
+@keyframes floatUp {
+  0%   { opacity: 0; transform: translateY(0) scale(.8) rotate(-1deg); filter: blur(0); }
+  10%  { opacity: 1; transform: translateY(-4%) scale(1.08) rotate(0deg); }
+  75%  { opacity: 1; filter: blur(0); }
+  100% { opacity: 0; transform: translateY(calc(-1 * var(--rise))) scale(1.3) rotate(1deg); filter: blur(2px); }
+}
+@keyframes burst {
+  0% { opacity: .9; transform: scale(.3); }
+  30% { opacity: .5; transform: scale(1.4); }
+  100% { opacity: 0; transform: scale(2.2); }
+}
+
+footer {
+  width: 100%; max-width: 420px; box-sizing: border-box; z-index: 10;
+  padding: 8px 16px max(env(safe-area-inset-bottom), 20px);
+  display: flex; flex-direction: column; gap: 8px;
+}
+select, input[type="text"] {
+  width: 100%; box-sizing: border-box; padding: 12px 16px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--panel); color: var(--fg);
+  font: inherit; font-size: 16px; text-align: center; text-align-last: center; outline: none;
+  user-select: text; -webkit-user-select: text;
+}
+.row-inline { display: flex; gap: 8px; }
+.btn {
+  border: 1px solid var(--border); background: var(--panel); color: var(--fg);
+  border-radius: 20px; padding: 10px 16px; font: inherit; font-size: .9rem; cursor: pointer; white-space: nowrap;
+}
+.btn.danger { color: #ef4444; }
+
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.55); display: none;
+  align-items: flex-end; justify-content: center; z-index: 50;
+}
+.overlay.open { display: flex; }
+.sheet {
+  width: 100%; max-width: 480px; max-height: 88vh; overflow-y: auto; box-sizing: border-box;
+  background: var(--panel); border-radius: 22px 22px 0 0; padding: 20px 20px max(env(safe-area-inset-bottom), 24px);
+  touch-action: pan-y; border: 1px solid var(--border);
+}
+.sheet h2 { margin: 0 0 6px; font-size: 1.15rem; }
+.row {
+  display: flex; justify-content: space-between; align-items: center; gap: 14px;
+  padding: 13px 0; border-bottom: 1px solid var(--border);
+}
+.row .txt { flex: 1; font-size: .98rem; }
+.row .hint { display: block; color: var(--muted); font-size: .78rem; margin-top: 3px; line-height: 1.3; }
+.row.disabled { opacity: .4; pointer-events: none; }
+.row select { width: auto; max-width: 55%; padding: 8px 12px; border-radius: 12px; font-size: 14px; text-align: left; text-align-last: left; }
+.switch {
+  appearance: none; -webkit-appearance: none; width: 46px; height: 28px; margin: 0; flex: none;
+  border-radius: 14px; background: var(--border); position: relative; cursor: pointer; outline: none; transition: background .2s;
+}
+.switch::after {
+  content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px;
+  border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.4);
+}
+.switch:checked { background: var(--accent); }
+.switch:checked::after { transform: translateX(18px); }
+.sheet-actions { display: flex; gap: 10px; margin-top: 16px; justify-content: space-between; }
+.note { color: var(--muted); font-size: .8rem; margin-top: 12px; line-height: 1.4; }
+
+/* ---------- Επίπεδα αφοσίωσης ---------- */
+.holiness {
+  font-size: .78rem; letter-spacing: .3px; color: var(--accent);
+  text-align: center; margin-top: 2px; opacity: .88;
+}
+
+/* ---------- «Πύλες Παραδείσου» — αχνό φως πίσω από το κομποσχοίνι/ροζάριο ---------- */
+.paradise-gate {
+  position: absolute; top: 0; left: 50%; width: 100%;
+  height: var(--gate-h, 30%);
+  transform: translateX(-50%); pointer-events: none; z-index: 0;
+  opacity: 0; transition: opacity 1.4s ease, height 1.4s ease;
+}
+.paradise-gate::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 58% 100% at 50% 0%,
+    rgba(255,251,225,.95) 0%, rgba(255,241,190,.55) 26%, rgba(255,231,155,.2) 50%, transparent 76%);
+  filter: blur(8px);
+}
+.paradise-gate::after {
+  content: ""; position: absolute; inset: 0; opacity: .8;
+  background: repeating-conic-gradient(from 0deg at 50% 0%,
+    rgba(255,255,235,.4) 0deg 3deg, transparent 3deg 15deg);
+  mix-blend-mode: screen;
+  -webkit-mask-image: radial-gradient(ellipse 62% 95% at 50% 0%, black 0%, transparent 78%);
+          mask-image: radial-gradient(ellipse 62% 95% at 50% 0%, black 0%, transparent 78%);
+}
+.paradise-gate.blessed::before {
+  background: radial-gradient(ellipse 62% 100% at 50% 0%,
+    rgba(255,253,238,1) 0%, rgba(255,246,205,.65) 28%, rgba(255,235,165,.26) 52%, transparent 78%);
+}
+.paradise-gate.blessed::after { animation: gateShimmer 3.4s ease-in-out infinite; }
+@keyframes gateShimmer { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
+
+/* ---------- Ενότητα υποστήριξης/δωρεών ---------- */
+.support-block { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
+.support-title { font-weight: 600; font-size: .98rem; margin-bottom: 4px; }
+.support-desc { color: var(--muted); font-size: .82rem; line-height: 1.4; margin-bottom: 6px; }
+.support-safe { color: var(--muted); font-size: .76rem; line-height: 1.4; margin-bottom: 10px; opacity: .9; }
+.blessing-btn {
+  width: 100%; box-sizing: border-box; padding: 13px 16px; font-size: 1rem; font-weight: 600;
+  background: color-mix(in srgb, var(--accent) 22%, var(--panel)); border-color: var(--accent);
+}
+.support-confirm {
+  margin-top: 10px; padding: 12px; border-radius: 14px;
+  background: color-mix(in srgb, var(--accent) 10%, var(--panel)); border: 1px solid var(--border);
+}
+.support-confirm-text { font-size: .82rem; line-height: 1.4; color: var(--fg); margin-bottom: 10px; }
+.support-amounts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
+.amount-btn {
+  padding: 10px 4px; font-size: .95rem; font-weight: 600; text-align: center;
+  background: color-mix(in srgb, var(--accent) 22%, var(--panel)); border-color: var(--accent);
+}
+.support-confirm .row-inline .btn { flex: 1; }
+#support-note { color: var(--accent); font-weight: 500; margin-top: 8px; }
+
+/* ---------- Λάμψη ευλογίας σε όλη την εφαρμογή μετά από προσφορά ---------- */
+#blessing-flash {
+  position: fixed; inset: 0; pointer-events: none; z-index: 999; opacity: 0;
+  background: radial-gradient(circle at 50% 38%,
+    rgba(255,255,245,.95) 0%, rgba(255,246,205,.6) 32%, rgba(255,235,170,.15) 58%, transparent 78%);
+}
+#blessing-flash.flash { animation: blessingFlash 2.8s ease-out; }
+@keyframes blessingFlash {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  35% { opacity: .7; }
+  100% { opacity: 0; }
+}
+</style>
+</head>
+<body>
+<div id="blessing-flash" aria-hidden="true"></div>
+<header>
+  <div class="topbar">
+    <div class="tabs" role="tablist">
+      <button class="tab" id="tab-rosary" role="tab"></button>
+      <button class="tab" id="tab-ortho" role="tab"></button>
+    </div>
+    <button class="icon-btn" id="undo-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>
+    </button>
+    <button class="icon-btn" id="theme-btn">
+      <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+    <button class="icon-btn" id="settings-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2" fill="var(--panel)"/><circle cx="15" cy="12" r="2" fill="var(--panel)"/><circle cx="8" cy="18" r="2" fill="var(--panel)"/></svg>
+    </button>
+  </div>
+  <div class="counters" id="counters"></div>
+  <div class="holiness" id="holiness"></div>
+</header>
+
+<div id="stage">
+  <div class="glow" aria-hidden="true"></div>
+  <div class="paradise-gate" id="paradise-gate" aria-hidden="true"></div>
+  <div class="pendant" aria-hidden="true" id="pendant"></div>
+  <div class="start-hint" id="start-hint" data-i18n="startHint"></div>
+  <div class="rope" id="rope">
+    <div class="cord"></div>
+    <div id="track"></div>
+  </div>
+</div>
+
+<footer>
+  <select id="prayer-select"></select>
+  <div class="row-inline" id="custom-box" hidden>
+    <input type="text" id="prayer-input" autocomplete="off">
+    <button class="btn" id="save-prayer"></button>
+  </div>
+  <button class="btn danger" id="del-prayer" hidden></button>
+</footer>
+
+<div class="overlay" id="overlay">
+  <div class="sheet" id="sheet" role="dialog">
+    <h2 data-i18n="settingsTitle"></h2>
+    <label class="row"><span class="txt" data-i18n="hapticBead"></span><input type="checkbox" class="switch" data-key="hapticBead"></label>
+    <label class="row"><span class="txt"><span data-i18n="hapticComplete"></span><span class="hint" data-i18n="hapticCompleteHint"></span></span><input type="checkbox" class="switch" data-key="hapticComplete"></label>
+    <label class="row"><span class="txt" data-i18n="sound"></span><input type="checkbox" class="switch" data-key="sound"></label>
+    <label class="row"><span class="txt"><span data-i18n="remind"></span><span class="hint" data-i18n="remindHint"></span></span><input type="checkbox" class="switch" data-key="remind"></label>
+    <label class="row" id="row-strong"><span class="txt"><span data-i18n="remindStrong"></span><span class="hint" data-i18n="remindStrongHint"></span></span><input type="checkbox" class="switch" data-key="remindStrong"></label>
+    <label class="row"><span class="txt" data-i18n="wakeLock"></span><input type="checkbox" class="switch" data-key="wakeLock"></label>
+    <label class="row"><span class="txt"><span data-i18n="langLabel"></span><span class="hint" data-i18n="langHint"></span></span>
+      <select data-key="lang" id="lang-select"></select>
+    </label>
+    <label class="row" id="row-big"><span class="txt"><span data-i18n="bigPrayerLabel"></span><span class="hint" data-i18n="bigPrayerHint"></span></span>
+      <select data-key="bigPrayer">
+        <option value="pater" data-i18n="bigPater"></option>
+        <option value="gloria" data-i18n="bigGloria"></option>
+        <option value="none" data-i18n="bigNone"></option>
+      </select>
+    </label>
+    <div class="note" id="vib-note" data-i18n="vibNote" hidden></div>
+    <div class="support-block">
+      <div class="support-title" data-i18n="supportTitle"></div>
+      <div class="support-desc" data-i18n="supportDesc"></div>
+      <div class="support-safe" data-i18n="supportSafeNote"></div>
+      <button class="btn blessing-btn" id="blessing-btn" data-i18n="supportBtn"></button>
+      <div class="support-confirm" id="support-confirm" hidden>
+        <div class="support-confirm-text" data-i18n="supportConfirmText"></div>
+        <div class="support-amounts">
+          <button class="btn amount-btn" data-amount-url="https://buy.stripe.com/9B6fZi08I53T0ya6eN4AU01">2 €</button>
+          <button class="btn amount-btn" data-amount-url="https://buy.stripe.com/00w28sf3CeEtgx86eN4AU02">5 €</button>
+          <button class="btn amount-btn" data-amount-url="https://buy.stripe.com/fZufZiaNmaod0ya1Yx4AU03">10 €</button>
+          <button class="btn amount-btn" data-amount-url="https://buy.stripe.com/00wbJ2cVu0NDgx88mV4AU04">50 €</button>
+        </div>
+        <div class="row-inline">
+          <button class="btn" id="support-cancel" data-i18n="supportCancel"></button>
+        </div>
+      </div>
+      <div class="note" id="support-note" hidden></div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn danger" id="reset-btn" data-i18n="resetBtn"></button>
+      <button class="btn" id="close-settings" data-i18n="close"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- Γλώσσες (ενιαία λίστα, ίδια για κομποσχοίνι & ροζάριο) ---------- */
+const LANGS = ['en','el','fr','de','es','it','pt','nl','pl','ro','ru','uk','bg','sr','hr','cs','sk','sv','la','ar'];
+const LANG_NAMES = {
+  en:'English', el:'Ελληνικά', fr:'Français', de:'Deutsch', es:'Español', it:'Italiano',
+  pt:'Português', nl:'Nederlands', pl:'Polski', ro:'Română', ru:'Русский', uk:'Українська',
+  bg:'Български', sr:'Српски', hr:'Hrvatski', cs:'Čeština', sk:'Slovenčina', sv:'Svenska',
+  la:'Latina', ar:'العربية'
+};
+const RTL_LANGS = ['ar'];
+
+/* ---------- Προσευχές κομποσχοινιού (Jesus Prayer family) ---------- */
+const PRAYERS_ORTHO = {
+  en: ['Lord Jesus Christ, Son of God, have mercy on me, a sinner','Lord Jesus Christ, have mercy on me','Lord, have mercy','Most Holy Theotokos, save us','Virgin Theotokos, rejoice, Mary full of grace, the Lord is with you','O God, cleanse me, a sinner','Glory to You, our God, glory to You','Holy God, Holy Mighty, Holy Immortal, have mercy on us'],
+  el: ['Κύριε Ιησού Χριστέ, Υιέ του Θεού, ελέησόν με τον αμαρτωλόν','Κύριε Ιησού Χριστέ, ελέησόν με','Κύριε, ελέησον','Υπεραγία Θεοτόκε, σώσον ημάς','Θεοτόκε Παρθένε, χαίρε, κεχαριτωμένη Μαρία, ο Κύριος μετά σου','Ο Θεός, ιλάσθητί μοι τω αμαρτωλώ','Δόξα Σοι ο Θεός, δόξα Σοι','Άγιος ο Θεός, Άγιος Ισχυρός, Άγιος Αθάνατος, ελέησον ημάς'],
+  fr: ['Seigneur Jésus-Christ, Fils de Dieu, aie pitié de moi, pécheur','Seigneur Jésus-Christ, aie pitié de moi','Seigneur, aie pitié','Très Sainte Mère de Dieu, sauve-nous','Vierge Mère de Dieu, réjouis-toi, Marie pleine de grâce, le Seigneur est avec toi','Ô Dieu, purifie-moi, pécheur','Gloire à Toi, notre Dieu, gloire à Toi','Dieu saint, Saint fort, Saint immortel, aie pitié de nous'],
+  de: ['Herr Jesus Christus, Sohn Gottes, erbarme dich meiner, des Sünders','Herr Jesus Christus, erbarme dich meiner','Herr, erbarme dich','Allheilige Gottesgebärerin, rette uns','Jungfrau Gottesgebärerin, freue dich, Maria voll der Gnade, der Herr ist mit dir','O Gott, reinige mich, den Sünder','Ehre sei dir, unser Gott, Ehre sei dir','Heiliger Gott, Heiliger Starker, Heiliger Unsterblicher, erbarme dich unser'],
+  es: ['Señor Jesucristo, Hijo de Dios, ten misericordia de mí, pecador','Señor Jesucristo, ten misericordia de mí','Señor, ten piedad','Santísima Madre de Dios, sálvanos','Virgen Madre de Dios, alégrate, María llena de gracia, el Señor está contigo','Oh Dios, purifícame, pecador','Gloria a Ti, Dios nuestro, gloria a Ti','Dios Santo, Santo Poderoso, Santo Inmortal, ten piedad de nosotros'],
+  it: ['Signore Gesù Cristo, Figlio di Dio, abbi pietà di me peccatore','Signore Gesù Cristo, abbi pietà di me','Signore, pietà','Santissima Madre di Dio, salvaci','Vergine Madre di Dio, gioisci, Maria piena di grazia, il Signore è con te','O Dio, purificami, peccatore','Gloria a Te, nostro Dio, gloria a Te','Dio santo, Santo forte, Santo immortale, abbi pietà di noi'],
+  pt: ['Senhor Jesus Cristo, Filho de Deus, tem misericórdia de mim, pecador','Senhor Jesus Cristo, tem misericórdia de mim','Senhor, tem piedade','Santíssima Mãe de Deus, salva-nos','Virgem Mãe de Deus, alegra-te, Maria cheia de graça, o Senhor é contigo','Ó Deus, purifica-me, pecador','Glória a Ti, nosso Deus, glória a Ti','Deus Santo, Santo Forte, Santo Imortal, tem piedade de nós'],
+  nl: ['Heer Jezus Christus, Zoon van God, heb medelijden met mij, zondaar','Heer Jezus Christus, heb medelijden met mij','Heer, ontferm U','Allerheiligste Moeder van God, red ons','Maagd Moeder van God, verheug u, Maria vol van genade, de Heer is met u','O God, reinig mij, zondaar','Ere zij U, onze God, ere zij U','Heilige God, Heilige Sterke, Heilige Onsterfelijke, heb medelijden met ons'],
+  pl: ['Panie Jezu Chryste, Synu Boży, zmiłuj się nade mną, grzesznikiem','Panie Jezu Chryste, zmiłuj się nade mną','Panie, zmiłuj się','Przenajświętsza Bogurodzico, zbaw nas','Bogurodzico Dziewico, raduj się, Maryjo łaski pełna, Pan z Tobą','Boże, oczyść mnie grzesznego','Chwała Tobie, Boże nasz, chwała Tobie','Święty Boże, Święty Mocny, Święty Nieśmiertelny, zmiłuj się nad nami'],
+  ro: ['Doamne Iisuse Hristoase, Fiul lui Dumnezeu, miluiește-mă pe mine păcătosul','Doamne Iisuse Hristoase, miluiește-mă','Doamne, miluiește','Preasfântă Născătoare de Dumnezeu, mântuiește-ne','Născătoare de Dumnezeu Fecioară, bucură-te, Marie, ceea ce ești plină de dar, Domnul este cu Tine','Dumnezeule, curățește-mă pe mine păcătosul','Slavă Ție, Dumnezeul nostru, slavă Ție','Sfinte Dumnezeule, Sfinte Puternice, Sfinte fără de moarte, miluiește-ne pe noi'],
+  ru: ['Господи Иисусе Христе, Сыне Божий, помилуй мя грешного','Господи Иисусе Христе, помилуй мя','Господи, помилуй','Пресвятая Богородице, спаси нас','Богородице Дево, радуйся, Благодатная Марие, Господь с Тобою','Боже, очисти мя грешного','Слава Тебе, Боже наш, слава Тебе','Святый Боже, Святый Крепкий, Святый Безсмертный, помилуй нас'],
+  uk: ['Господи Ісусе Христе, Сину Божий, помилуй мене грішного','Господи Ісусе Христе, помилуй мене','Господи, помилуй','Пресвята Богородице, спаси нас','Богородице Діво, радуйся, благодатна Маріє, Господь з Тобою','Боже, очисти мене грішного','Слава Тобі, Боже наш, слава Тобі','Святий Боже, Святий Кріпкий, Святий Безсмертний, помилуй нас'],
+  bg: ['Господи Иисусе Христе, Сине Божий, помилуй ме грешния','Господи Иисусе Христе, помилуй ме','Господи, помилуй','Пресвета Богородице, спаси нас','Богородице Дево, радвай се, благодатна Марийо, Господ е с Тебе','Боже, очисти ме грешния','Слава Тебе, Боже наш, слава Тебе','Свети Боже, Свети Крепки, Свети Безсмъртни, помилуй нас'],
+  sr: ['Господе Исусе Христе, Сине Божији, помилуј ме грешног','Господе Исусе Христе, помилуј ме','Господе, помилуј','Пресвета Богородице, спаси нас','Богородице Дјево, радуј се, благодатна Марија, Господ је с тобом','Боже, очисти ме грешног','Слава Теби, Боже наш, слава Теби','Свети Боже, Свети Крепки, Свети Бесмртни, помилуј нас'],
+  hr: ['Gospodine Isuse Kriste, Sine Božji, smiluj se meni grešniku','Gospodine Isuse Kriste, smiluj se meni','Gospodine, smiluj se','Presveta Bogorodice, spasi nas','Bogorodice Djevo, raduj se, Marijo milosti puna, Gospodin je s tobom','Bože, očisti me grešnoga','Slava Tebi, Bože naš, slava Tebi','Sveti Bože, Sveti Jaki, Sveti Besmrtni, smiluj se nama'],
+  cs: ['Pane Jezu Kriste, Synu Boží, smiluj se nade mnou hříšným','Pane Jezu Kriste, smiluj se nade mnou','Pane, smiluj se','Přesvatá Bohorodičko, spas nás','Bohorodičko Panno, raduj se, Maria milosti plná, Hospodin s tebou','Bože, očisti mě hříšného','Sláva Tobě, Bože náš, sláva Tobě','Svatý Bože, Svatý Silný, Svatý Nesmrtelný, smiluj se nad námi'],
+  sk: ['Pane Ježišu Kriste, Synu Boží, zmiluj sa nado mnou hriešnym','Pane Ježišu Kriste, zmiluj sa nado mnou','Pane, zmiluj sa','Presvätá Bohorodička, spas nás','Bohorodička Panna, raduj sa, Mária milosti plná, Pán s tebou','Bože, očisti ma hriešneho','Sláva Tebe, Bože náš, sláva Tebe','Svätý Bože, Svätý Silný, Svätý Nesmrteľný, zmiluj sa nad nami'],
+  sv: ['Herre Jesus Kristus, Guds Son, förbarma dig över mig, syndare','Herre Jesus Kristus, förbarma dig över mig','Herre, förbarma dig','Allraheligaste Gudsmoder, fräls oss','Jungfru Gudsmoder, gläd dig, Maria full av nåd, Herren är med dig','O Gud, rena mig, syndare','Ära vare dig, vår Gud, ära vare dig','Helige Gud, Helige Starke, Helige Odödlige, förbarma dig över oss'],
+  la: ['Domine Iesu Christe, Fili Dei, miserere mei peccatoris','Domine Iesu Christe, miserere mei','Domine, miserere','Sanctissima Dei Genetrix, salva nos','Virgo Dei Genetrix, gaude, Maria gratia plena, Dominus tecum','Deus, munda me peccatorem','Gloria Tibi, Deus noster, gloria Tibi','Sancte Deus, Sancte Fortis, Sancte Immortalis, miserere nobis'],
+  ar: ['أيها الرب يسوع المسيح، ابن الله، ارحمني أنا الخاطئ','أيها الرب يسوع المسيح، ارحمني','يا رب ارحم','يا كلية القداسة والدة الإله، خلّصينا','يا والدة الإله العذراء، افرحي يا ممتلئة نعمة مريم، الرب معك','يا الله، طهّرني أنا الخاطئ','المجد لك يا إلهنا، المجد لك','قدوس الله، قدوس القوي، قدوس الذي لا يموت، ارحمنا']
+};
+
+/* ---------- Προσευχές ροζαρίου (Hail Mary / Our Father family) ---------- */
+const PRAYERS_ROSARY = {
+  en: ['Hail Mary, full of grace, the Lord is with thee','Holy Mary, Mother of God, pray for us sinners','Our Father, who art in heaven, hallowed be Thy name','Glory be to the Father, and to the Son, and to the Holy Spirit','O my Jesus, forgive us our sins','Jesus, I trust in You','Hail, Holy Queen, Mother of Mercy','My God, I am sorry for my sins'],
+  el: ['Χαίρε Μαρία, κεχαριτωμένη, ο Κύριος μετά σου','Αγία Μαρία, Μήτηρ Θεού, πρέσβευε υπέρ ημών των αμαρτωλών','Πάτερ ημών, ο εν τοις ουρανοίς, αγιασθήτω το όνομά σου','Δόξα Πατρί και Υιώ και Αγίω Πνεύματι','Ιησού μου, συγχώρεσε τις αμαρτίες μας','Ιησού, εμπιστεύομαι σε Εσένα','Χαίρε, Βασίλισσα, Μήτηρ ελέους','Θεέ μου, λυπάμαι για τις αμαρτίες μου'],
+  fr: ['Je vous salue Marie, pleine de grâce, le Seigneur est avec vous','Sainte Marie, Mère de Dieu, priez pour nous pécheurs','Notre Père, qui es aux cieux, que ton nom soit sanctifié','Gloire au Père, au Fils et au Saint-Esprit','Ô mon Jésus, pardonnez-nous nos offenses',"Jésus, j'ai confiance en Toi",'Je vous salue, Reine, Mère de miséricorde',"Mon Dieu, j'ai un très grand regret de vous avoir offensé"],
+  de: ['Gegrüßet seist du, Maria, voll der Gnade, der Herr ist mit dir','Heilige Maria, Mutter Gottes, bitte für uns Sünder','Vater unser im Himmel, geheiligt werde dein Name','Ehre sei dem Vater und dem Sohn und dem Heiligen Geist','O mein Jesus, verzeih uns unsere Sünden','Jesus, ich vertraue auf dich','Sei gegrüßt, o Königin, Mutter der Barmherzigkeit','Mein Gott, es reut mich, gesündigt zu haben'],
+  es: ['Dios te salve, María, llena eres de gracia, el Señor es contigo','Santa María, Madre de Dios, ruega por nosotros pecadores','Padre nuestro, que estás en el cielo, santificado sea tu nombre','Gloria al Padre, y al Hijo, y al Espíritu Santo','Oh Jesús mío, perdona nuestras culpas','Jesús, en Ti confío','Dios te salve, Reina y Madre de misericordia','Dios mío, me pesa de todo corazón haber pecado'],
+  it: ['Ave Maria, piena di grazia, il Signore è con te','Santa Maria, Madre di Dio, prega per noi peccatori','Padre nostro, che sei nei cieli, sia santificato il tuo nome','Gloria al Padre, al Figlio e allo Spirito Santo','Gesù mio, perdona le nostre colpe','Gesù, confido in Te','Salve, Regina, Madre di misericordia','Mio Dio, mi pento dei miei peccati'],
+  pt: ['Ave Maria, cheia de graça, o Senhor é contigo','Santa Maria, Mãe de Deus, rogai por nós pecadores','Pai Nosso, que estais no céu, santificado seja o vosso nome','Glória ao Pai, e ao Filho, e ao Espírito Santo','Ó meu Jesus, perdoai as nossas culpas','Jesus, eu confio em Vós','Salve, Rainha, Mãe de misericórdia','Meu Deus, arrependo-me dos meus pecados'],
+  nl: ['Wees gegroet, Maria, vol van genade, de Heer is met u','Heilige Maria, Moeder van God, bid voor ons zondaars','Onze Vader, die in de hemel zijt, geheiligd zij uw naam','Eer aan de Vader, en aan de Zoon, en aan de Heilige Geest','O mijn Jezus, vergeef ons onze zonden','Jezus, ik vertrouw op U','Wees gegroet, Koningin, Moeder van barmhartigheid','Mijn God, het spijt mij van mijn zonden'],
+  pl: ['Zdrowaś Maryjo, łaski pełna, Pan z Tobą','Święta Maryjo, Matko Boża, módl się za nami grzesznymi','Ojcze nasz, któryś jest w niebie, święć się imię Twoje','Chwała Ojcu i Synowi, i Duchowi Świętemu','O mój Jezu, przebacz nam nasze grzechy','Jezu, ufam Tobie','Witaj Królowo, Matko Miłosierdzia','Boże mój, żałuję za grzechy moje'],
+  ro: ['Bucură-te, Marie, cea plină de har, Domnul este cu tine','Sfântă Marie, Maica lui Dumnezeu, roagă-te pentru noi, păcătoșii','Tatăl nostru, care ești în ceruri, sfințească-se numele Tău','Slavă Tatălui și Fiului și Sfântului Duh','O, Iisuse al meu, iartă-ne păcatele noastre','Iisuse, mă încred în Tine','Bucură-te, Regină, Maică a milostivirii','Dumnezeul meu, îmi pare rău de păcatele mele'],
+  ru: ['Радуйся, Мария, благодати полная, Господь с Тобою','Святая Мария, Матерь Божия, молись о нас грешных','Отче наш, Иже еси на небесех, да святится имя Твое','Слава Отцу и Сыну и Святому Духу','О Иисусе мой, прости нам грехи наши','Иисус, уповаю на Тебя','Радуйся, Царица, Матерь милосердия','Боже мой, сожалею о грехах моих'],
+  uk: ['Радуйся, Маріє, благодаті повна, Господь з Тобою','Свята Маріє, Матір Божа, молись за нас грішних',"Отче наш, що є на небесах, нехай святиться ім'я Твоє",'Слава Отцю, і Сину, і Святому Духу','О Ісусе мій, прости нам гріхи наші','Ісусе, я довіряю Тобі','Радуйся, Царице, Мати милосердя','Боже мій, каюсь у гріхах моїх'],
+  bg: ['Радвай се, Мария, благодатна, Господ е с Тебе','Света Мария, Майко Божия, моли се за нас грешните','Отче наш, Който си на небесата, да се свети Твоето име','Слава на Отца и Сина и Светия Дух','О, Иисусе мой, прости греховете ни','Иисусе, уповавам на Тебе','Радвай се, Царице, Майко на милосърдието','Боже мой, съжалявам за греховете си'],
+  sr: ['Здраво, Марија, милости пуна, Господ је с Тобом','Света Марија, Мајко Божија, моли за нас грешне','Оче наш, који си на небесима, да се свети име Твоје','Слава Оцу и Сину и Духу Светом','О Исусе мој, опрости нам грехе наше','Исусе, уздам се у Тебе','Здраво, Царице, Мајко милосрђа','Боже мој, жалим за гресима својим'],
+  hr: ['Zdravo Marijo, milosti puna, Gospodin s tobom','Sveta Marijo, Majko Božja, moli za nas grešnike','Oče naš, koji jesi na nebesima, sveti se ime tvoje','Slava Ocu i Sinu i Duhu Svetomu','O Isuse moj, oprosti nam grijehe naše','Isuse, uzdam se u Tebe','Zdravo Kraljice, Majko milosrđa','Bože moj, žao mi je zbog grijeha mojih'],
+  cs: ['Zdrávas Maria, milosti plná, Pán s tebou','Svatá Maria, Matko Boží, pros za nás hříšné','Otče náš, jenž jsi na nebesích, posvěť se jméno Tvé','Sláva Otci i Synu i Duchu Svatému','Ó můj Jezu, odpusť nám naše hříchy','Jezu, důvěřuji Tobě','Zdrávas Královno, Matko milosrdenství','Bože můj, lituji svých hříchů'],
+  sk: ['Zdravas Mária, milosti plná, Pán s tebou','Svätá Mária, Matka Božia, pros za nás hriešnych','Otče náš, ktorý si na nebesiach, posväť sa meno Tvoje','Sláva Otcu i Synu i Duchu Svätému','Ó môj Jezu, odpusť nám naše hriechy','Jezu, dôverujem Tebe','Zdravas Kráľovná, Matka milosrdenstva','Bože môj, ľutujem svoje hriechy'],
+  sv: ['Var hälsad Maria, full av nåd, Herren är med dig','Heliga Maria, Guds moder, be för oss syndare','Fader vår, som är i himmelen, helgat varde ditt namn','Ära vare Fadern och Sonen och den Helige Ande','O min Jesus, förlåt oss våra synder','Jesus, jag förtröstar på dig','Hej, Drottning, Barmhärtighetens Moder','Min Gud, jag ångrar mina synder'],
+  la: ['Ave Maria, gratia plena, Dominus tecum','Sancta Maria, Mater Dei, ora pro nobis peccatoribus','Pater noster, qui es in caelis, sanctificetur nomen tuum','Gloria Patri, et Filio, et Spiritui Sancto','O mi Iesu, dimitte nobis debita nostra','Iesu, in te confido','Salve, Regina, Mater misericordiae','Deus meus, poenitet me peccatorum meorum'],
+  ar: ['السلام لك يا مريم، ممتلئة نعمة، الرب معك','يا قديسة مريم، والدة الإله، صلّي لأجلنا نحن الخاطئين','أبانا الذي في السماوات، ليتقدس اسمك','المجد للآب والابن والروح القدس','يا يسوعي، اغفر لنا خطايانا','يا يسوع، أنا أثق بك','السلام لك يا ملكة، يا أم الرحمة','يا الله، أنا نادم على خطاياي']
+};
+const PRAYERS = { ortho: PRAYERS_ORTHO, rosary: PRAYERS_ROSARY };
+
+/* ---------- Πάτερ ημών / Δόξα Πατρί (μεγάλη χάνδρα) ---------- */
+const BIG_PRAYERS = {
+  pater: { en:'Our Father, who art in heaven, hallowed be Thy name', el:'Πάτερ ημών, ο εν τοις ουρανοίς, αγιασθήτω το όνομά σου', fr:'Notre Père, qui es aux cieux, que ton nom soit sanctifié', de:'Vater unser im Himmel, geheiligt werde dein Name', es:'Padre nuestro, que estás en el cielo, santificado sea tu nombre', it:'Padre nostro, che sei nei cieli, sia santificato il tuo nome', pt:'Pai Nosso, que estais no céu, santificado seja o vosso nome', nl:'Onze Vader, die in de hemel zijt, geheiligd zij uw naam', pl:'Ojcze nasz, któryś jest w niebie, święć się imię Twoje', ro:'Tatăl nostru, care ești în ceruri, sfințească-se numele Tău', ru:'Отче наш, Иже еси на небесех, да святится имя Твое', uk:"Отче наш, що є на небесах, нехай святиться ім'я Твоє", bg:'Отче наш, Който си на небесата, да се свети Твоето име', sr:'Оче наш, који си на небесима, да се свети име Твоје', hr:'Oče naš, koji jesi na nebesima, sveti se ime tvoje', cs:'Otče náš, jenž jsi na nebesích, posvěť se jméno Tvé', sk:'Otče náš, ktorý si na nebesiach, posväť sa meno Tvoje', sv:'Fader vår, som är i himmelen, helgat varde ditt namn', la:'Pater noster, qui es in caelis, sanctificetur nomen tuum', ar:'أبانا الذي في السماوات، ليتقدس اسمك' },
+  gloria: { en:'Glory be to the Father, and to the Son, and to the Holy Spirit', el:'Δόξα Πατρί και Υιώ και Αγίω Πνεύματι', fr:'Gloire au Père, au Fils et au Saint-Esprit', de:'Ehre sei dem Vater und dem Sohn und dem Heiligen Geist', es:'Gloria al Padre, y al Hijo, y al Espíritu Santo', it:'Gloria al Padre, al Figlio e allo Spirito Santo', pt:'Gloria ao Pai, e ao Filho, e ao Espírito Santo', nl:'Eer aan de Vader, en aan de Zoon, en aan de Heilige Geest', pl:'Chwała Ojcu i Synowi, i Duchowi Świętemu', ro:'Slavă Tatălui și Fiului și Sfântului Duh', ru:'Слава Отцу и Сыну и Святому Духу', uk:'Слава Отцю, і Сину, і Святому Духу', bg:'Слава на Отца и Сина и Светия Дух', sr:'Слава Оцу и Сину и Духу Светом', hr:'Slava Ocu i Sinu i Duhu Svetomu', cs:'Sláva Otci i Synu i Duchu Svatému', sk:'Sláva Otcu i Synu i Duchu Svätému', sv:'Ära vare Fadern och Sonen och den Helige Ande', la:'Gloria Patri, et Filio, et Spiritui Sancto', ar:'المجد للآب والابن والروح القدس' },
+  none: { en:'', el:'', fr:'', de:'', es:'', it:'', pt:'', nl:'', pl:'', ro:'', ru:'', uk:'', bg:'', sr:'', hr:'', cs:'', sk:'', sv:'', la:'', ar:'' }
+};
+
+/* ---------- Μεταφράσεις διεπαφής (ενιαία γλώσσα για όλη την εφαρμογή) ---------- */
+const STR = {
+  en: { tabName_ortho:'Prayer Rope', tabAria_ortho:'Orthodox prayer rope', tabName_rosary:'Rosary', tabAria_rosary:'Catholic rosary', undo:'Undo', toggleTheme:'Toggle theme', settingsAria:'Settings', prayerSelectAria:'Prayer', countKnots:'Knots', countRosariesOrtho:'Ropes', countBead:'Bead', countDecade:'Decade', countRosariesR:'Rosaries', optgroupPrayers:'Prayers', optgroupMine:'My own', freeOption:'✎ Write your own…', inputPlaceholder:'Write your prayer…', save:'Save', deletePrayer:'Delete this prayer', confirmDelete:'Delete this prayer?', settingsTitle:'Settings', hapticBead:'Micro-vibration on each knot / bead', hapticComplete:'Completion vibration', hapticCompleteHint:'33 knots, a decade, or a full rope/rosary', sound:'Bead / knot click sound', remind:'Remind me if I drift off', remindHint:'Fires once twice the pace of your last two beads has passed', remindStrong:'Stronger reminder vibration', remindStrongHint:"A longer buzz, so you're sure to notice it", wakeLock:'Keep screen on', langLabel:'Language', langHint:'Applies throughout the app', bigPrayerLabel:'Prayer on the large bead', bigPrayerHint:'Before each decade', bigPater:'Our Father', bigGloria:'Glory Be', bigNone:'None', vibNote:"This device/browser doesn't support vibration (e.g. iOS Safari). Use the sound option instead.", resetBtn:'Reset counters', confirmReset:'Reset the counters for this prayer?', close:'Close', startHint:'Swipe up or down to begin', supportTitle:'Support this app', supportDesc:'If this app helps your prayer, you can leave a small voluntary gift. It is entirely optional and never required.', supportSafeNote:'🔒 Opens a secure Stripe payment page in a new tab — the same trusted payment processor used by millions of businesses worldwide. This app never sees or stores your card or payment details.', supportBtn:'🙏 Leave a blessing', supportConfirmText:"Choose an amount to open a secure payment page in a new tab:", supportCancel:'Cancel', supportThanks:'Thank you — glory to God for your generosity.' },
+  el: { tabName_ortho:'Κομποσχοίνι', tabAria_ortho:'Ορθόδοξο κομποσχοίνι', tabName_rosary:'Ροζάριο', tabAria_rosary:'Καθολικό ροζάριο', undo:'Αναίρεση', toggleTheme:'Εναλλαγή θέματος', settingsAria:'Ρυθμίσεις', prayerSelectAria:'Προσευχή', countKnots:'Κόμποι', countRosariesOrtho:'Κομποσχοίνια', countBead:'Χάνδρα', countDecade:'Δεκάδα', countRosariesR:'Ροζάρια', optgroupPrayers:'Προσευχές', optgroupMine:'Δικές μου', freeOption:'✎ Γράψε τη δική σου…', inputPlaceholder:'Γράψε την προσευχή σου…', save:'Αποθήκευση', deletePrayer:'Διαγραφή αυτής της προσευχής', confirmDelete:'Διαγραφή αυτής της προσευχής;', settingsTitle:'Ρυθμίσεις', hapticBead:'Μικροδόνηση σε κάθε κόμπο / χάνδρα', hapticComplete:'Δόνηση ολοκλήρωσης', hapticCompleteHint:'33 κόμποι, δεκάδα ή ολόκληρο κομποσχοίνι/ροζάριο', sound:'Ήχος χάνδρας / κόμπου', remind:'Υπενθύμιση όταν ξεχαστείς', remindHint:'Όταν περάσει διπλάσιος χρόνος από τον ρυθμό των δύο τελευταίων κόμπων', remindStrong:'Ισχυρότερη δόνηση υπενθύμισης', remindStrongHint:'Πιο μακριά δόνηση, για να την καταλάβεις σίγουρα', wakeLock:'Να μένει αναμμένη η οθόνη', langLabel:'Γλώσσα', langHint:'Ισχύει σε όλη την εφαρμογή', bigPrayerLabel:'Προσευχή στη μεγάλη χάνδρα', bigPrayerHint:'Πριν από κάθε δεκάδα', bigPater:'Πάτερ ημών', bigGloria:'Δόξα Πατρί', bigNone:'Καμία', vibNote:'Η συσκευή/πρόγραμμα περιήγησης δεν υποστηρίζει δόνηση (π.χ. iOS Safari). Χρησιμοποίησε τον ήχο ως εναλλακτική.', resetBtn:'Μηδενισμός μετρητών', confirmReset:'Μηδενισμός των μετρητών για αυτή την προσευχή;', close:'Κλείσιμο', startHint:'Σύρε πάνω ή κάτω για να ξεκινήσεις', supportTitle:'Υποστήριξε την εφαρμογή', supportDesc:'Αν η εφαρμογή σε βοηθά στην προσευχή, μπορείς να αφήσεις μια μικρή, προαιρετική προσφορά. Δεν είναι ποτέ υποχρεωτική.', supportSafeNote:'🔒 Ανοίγει μια ασφαλή σελίδα πληρωμής Stripe σε νέα καρτέλα — τον ίδιο αξιόπιστο πάροχο πληρωμών που χρησιμοποιούν εκατομμύρια επιχειρήσεις παγκοσμίως. Η εφαρμογή δεν βλέπει και δεν αποθηκεύει ποτέ στοιχεία κάρτας ή πληρωμής.', supportBtn:'🙏 Άφησε μια ευλογία', supportConfirmText:'Διάλεξε ένα ποσό για να ανοίξει μια ασφαλής σελίδα πληρωμής σε νέα καρτέλα:', supportCancel:'Άκυρο', supportThanks:'Ευχαριστούμε — δόξα τω Θεώ για τη γενναιοδωρία σου.' },
+  fr: { tabName_ortho:'Corde à Prières', tabAria_ortho:'Corde à prières orthodoxe', tabName_rosary:'Chapelet', tabAria_rosary:'Chapelet catholique', undo:'Annuler', toggleTheme:'Changer de thème', settingsAria:'Réglages', prayerSelectAria:'Prière', countKnots:'Nœuds', countRosariesOrtho:'Cordes', countBead:'Grain', countDecade:'Dizaine', countRosariesR:'Chapelets', optgroupPrayers:'Prières', optgroupMine:'Les miennes', freeOption:'✎ Écris la tienne…', inputPlaceholder:'Écris ta prière…', save:'Enregistrer', deletePrayer:'Supprimer cette prière', confirmDelete:'Supprimer cette prière ?', settingsTitle:'Réglages', hapticBead:'Micro-vibration à chaque nœud / grain', hapticComplete:'Vibration de fin', hapticCompleteHint:'33 nœuds, une dizaine ou un chapelet complet', sound:'Son du grain / nœud', remind:'Me rappeler si je me perds', remindHint:"Se déclenche quand le double du rythme des deux derniers grains s'est écoulé", remindStrong:'Vibration de rappel plus forte', remindStrongHint:'Une vibration plus longue, pour être sûr de la remarquer', wakeLock:"Garder l'écran allumé", langLabel:'Langue', langHint:"S'applique à toute l'application", bigPrayerLabel:'Prière sur le grand grain', bigPrayerHint:'Avant chaque dizaine', bigPater:'Notre Père', bigGloria:'Gloire au Père', bigNone:'Aucune', vibNote:"Cet appareil/navigateur ne prend pas en charge la vibration (ex. iOS Safari). Utilise le son comme alternative.", resetBtn:'Réinitialiser les compteurs', confirmReset:'Réinitialiser les compteurs de cette prière ?', close:'Fermer', startHint:'Faites glisser vers le haut ou le bas pour commencer' },
+  de: { tabName_ortho:'Gebetsschnur', tabAria_ortho:'Orthodoxe Gebetsschnur', tabName_rosary:'Rosenkranz', tabAria_rosary:'Katholischer Rosenkranz', undo:'Rückgängig', toggleTheme:'Thema wechseln', settingsAria:'Einstellungen', prayerSelectAria:'Gebet', countKnots:'Knoten', countRosariesOrtho:'Schnüre', countBead:'Perle', countDecade:'Dekade', countRosariesR:'Rosenkränze', optgroupPrayers:'Gebete', optgroupMine:'Eigene', freeOption:'✎ Eigenes schreiben…', inputPlaceholder:'Schreibe dein Gebet…', save:'Speichern', deletePrayer:'Dieses Gebet löschen', confirmDelete:'Dieses Gebet löschen?', settingsTitle:'Einstellungen', hapticBead:'Mikrovibration bei jedem Knoten / jeder Perle', hapticComplete:'Vibration bei Abschluss', hapticCompleteHint:'33 Knoten, eine Dekade oder ein vollständiger Rosenkranz', sound:'Klick-Ton bei Perle / Knoten', remind:'Erinnere mich, falls ich abschweife', remindHint:'Löst aus, wenn doppelt so viel Zeit wie beim letzten Rhythmus vergangen ist', remindStrong:'Stärkere Erinnerungsvibration', remindStrongHint:'Ein längeres Vibrieren, damit du es sicher merkst', wakeLock:'Bildschirm an lassen', langLabel:'Sprache', langHint:'Gilt für die ganze App', bigPrayerLabel:'Gebet an der großen Perle', bigPrayerHint:'Vor jeder Dekade', bigPater:'Vater unser', bigGloria:'Ehre sei dem Vater', bigNone:'Keines', vibNote:'Dieses Gerät/Browser unterstützt keine Vibration (z. B. iOS Safari). Nutze stattdessen den Ton.', resetBtn:'Zähler zurücksetzen', confirmReset:'Zähler für dieses Gebet zurücksetzen?', close:'Schließen', startHint:'Wische nach oben oder unten, um zu beginnen' },
+  es: { tabName_ortho:'Cuerda de Oración', tabAria_ortho:'Cuerda de oración ortodoxa', tabName_rosary:'Rosario', tabAria_rosary:'Rosario católico', undo:'Deshacer', toggleTheme:'Cambiar tema', settingsAria:'Ajustes', prayerSelectAria:'Oración', countKnots:'Nudos', countRosariesOrtho:'Cuerdas', countBead:'Cuenta', countDecade:'Década', countRosariesR:'Rosarios', optgroupPrayers:'Oraciones', optgroupMine:'Mías', freeOption:'✎ Escribe la tuya…', inputPlaceholder:'Escribe tu oración…', save:'Guardar', deletePrayer:'Eliminar esta oración', confirmDelete:'¿Eliminar esta oración?', settingsTitle:'Ajustes', hapticBead:'Microvibración en cada nudo / cuenta', hapticComplete:'Vibración de finalización', hapticCompleteHint:'33 nudos, una década o un rosario completo', sound:'Sonido de cuenta / nudo', remind:'Avísame si me distraigo', remindHint:'Se activa cuando pasa el doble del ritmo de las dos últimas cuentas', remindStrong:'Vibración de aviso más fuerte', remindStrongHint:'Una vibración más larga, para que la notes seguro', wakeLock:'Mantener la pantalla encendida', langLabel:'Idioma', langHint:'Se aplica a toda la aplicación', bigPrayerLabel:'Oración en la cuenta grande', bigPrayerHint:'Antes de cada década', bigPater:'Padre Nuestro', bigGloria:'Gloria al Padre', bigNone:'Ninguna', vibNote:'Este dispositivo/navegador no admite vibración (p. ej. iOS Safari). Usa el sonido como alternativa.', resetBtn:'Reiniciar contadores', confirmReset:'¿Reiniciar los contadores de esta oración?', close:'Cerrar', startHint:'Desliza hacia arriba o abajo para comenzar' },
+  it: { tabName_ortho:'Corda di Preghiera', tabAria_ortho:'Corda di preghiera ortodossa', tabName_rosary:'Rosario', tabAria_rosary:'Rosario cattolico', undo:'Annulla', toggleTheme:'Cambia tema', settingsAria:'Impostazioni', prayerSelectAria:'Preghiera', countKnots:'Nodi', countRosariesOrtho:'Corde', countBead:'Grano', countDecade:'Decina', countRosariesR:'Rosari', optgroupPrayers:'Preghiere', optgroupMine:'Mie', freeOption:'✎ Scrivi la tua…', inputPlaceholder:'Scrivi la tua preghiera…', save:'Salva', deletePrayer:'Elimina questa preghiera', confirmDelete:'Eliminare questa preghiera?', settingsTitle:'Impostazioni', hapticBead:'Micro-vibrazione a ogni nodo / grano', hapticComplete:'Vibrazione di completamento', hapticCompleteHint:'33 nodi, una decina o un rosario completo', sound:'Suono del grano / nodo', remind:'Avvisami se mi distraggo', remindHint:'Si attiva quando passa il doppio del ritmo degli ultimi due grani', remindStrong:'Vibrazione di avviso più forte', remindStrongHint:'Una vibrazione più lunga, per essere sicuro di notarla', wakeLock:'Mantieni lo schermo acceso', langLabel:'Lingua', langHint:"Si applica a tutta l'app", bigPrayerLabel:'Preghiera sul grano grande', bigPrayerHint:'Prima di ogni decina', bigPater:'Padre Nostro', bigGloria:'Gloria al Padre', bigNone:'Nessuna', vibNote:'Questo dispositivo/browser non supporta la vibrazione (es. iOS Safari). Usa il suono come alternativa.', resetBtn:'Azzera contatori', confirmReset:'Azzerare i contatori di questa preghiera?', close:'Chiudi', startHint:'Scorri in alto o in basso per iniziare' },
+  pt: { tabName_ortho:'Cordão de Oração', tabAria_ortho:'Cordão de oração ortodoxo', tabName_rosary:'Rosário', tabAria_rosary:'Rosário católico', undo:'Desfazer', toggleTheme:'Alternar tema', settingsAria:'Configurações', prayerSelectAria:'Oração', countKnots:'Nós', countRosariesOrtho:'Cordões', countBead:'Conta', countDecade:'Década', countRosariesR:'Rosários', optgroupPrayers:'Orações', optgroupMine:'Minhas', freeOption:'✎ Escreva a sua…', inputPlaceholder:'Escreva a sua oração…', save:'Guardar', deletePrayer:'Eliminar esta oração', confirmDelete:'Eliminar esta oração?', settingsTitle:'Configurações', hapticBead:'Microvibração em cada nó / conta', hapticComplete:'Vibração de conclusão', hapticCompleteHint:'33 nós, uma década ou um rosário completo', sound:'Som da conta / nó', remind:'Avisa-me se me distrair', remindHint:'Ativa quando passa o dobro do ritmo das duas últimas contas', remindStrong:'Vibração de aviso mais forte', remindStrongHint:'Uma vibração mais longa, para teres a certeza que notas', wakeLock:'Manter o ecrã aceso', langLabel:'Idioma', langHint:'Aplica-se a toda a aplicação', bigPrayerLabel:'Oração na conta grande', bigPrayerHint:'Antes de cada década', bigPater:'Pai Nosso', bigGloria:'Glória ao Pai', bigNone:'Nenhuma', vibNote:'Este dispositivo/navegador não suporta vibração (ex. iOS Safari). Usa o som como alternativa.', resetBtn:'Repor contadores', confirmReset:'Repor os contadores desta oração?', close:'Fechar', startHint:'Deslize para cima ou para baixo para começar' },
+  nl: { tabName_ortho:'Gebedskoord', tabAria_ortho:'Orthodox gebedskoord', tabName_rosary:'Rozenkrans', tabAria_rosary:'Katholieke rozenkrans', undo:'Ongedaan maken', toggleTheme:'Thema wisselen', settingsAria:'Instellingen', prayerSelectAria:'Gebed', countKnots:'Knopen', countRosariesOrtho:'Koorden', countBead:'Kraal', countDecade:'Tientje', countRosariesR:'Rozenkransen', optgroupPrayers:'Gebeden', optgroupMine:'Eigen', freeOption:'✎ Schrijf je eigen…', inputPlaceholder:'Schrijf je gebed…', save:'Opslaan', deletePrayer:'Dit gebed verwijderen', confirmDelete:'Dit gebed verwijderen?', settingsTitle:'Instellingen', hapticBead:'Microtrilling bij elke knoop / kraal', hapticComplete:'Trilling bij voltooiing', hapticCompleteHint:'33 knopen, een tientje of een volledige rozenkrans', sound:'Klikgeluid bij kraal / knoop', remind:'Herinner me als ik afdwaal', remindHint:'Gaat af als er twee keer zo veel tijd is verstreken als je laatste ritme', remindStrong:'Sterkere herinneringstrilling', remindStrongHint:'Een langere trilling, zodat je het zeker merkt', wakeLock:'Scherm aan houden', langLabel:'Taal', langHint:'Geldt voor de hele app', bigPrayerLabel:'Gebed bij de grote kraal', bigPrayerHint:'Voor elk tientje', bigPater:'Onze Vader', bigGloria:'Eer aan de Vader', bigNone:'Geen', vibNote:'Dit apparaat/browser ondersteunt geen trilling (bv. iOS Safari). Gebruik het geluid als alternatief.', resetBtn:'Tellers resetten', confirmReset:'Tellers voor dit gebed resetten?', close:'Sluiten', startHint:'Swipe omhoog of omlaag om te beginnen' },
+  pl: { tabName_ortho:'Sznur Modlitewny', tabAria_ortho:'Prawosławny sznur modlitewny', tabName_rosary:'Różaniec', tabAria_rosary:'Katolicki różaniec', undo:'Anuluj', toggleTheme:'Zmień motyw', settingsAria:'Ustawienia', prayerSelectAria:'Modlitwa', countKnots:'Węzełki', countRosariesOrtho:'Sznury', countBead:'Paciorek', countDecade:'Dziesiątka', countRosariesR:'Różańce', optgroupPrayers:'Modlitwy', optgroupMine:'Moje', freeOption:'✎ Napisz swoją…', inputPlaceholder:'Napisz swoją modlitwę…', save:'Zapisz', deletePrayer:'Usuń tę modlitwę', confirmDelete:'Usunąć tę modlitwę?', settingsTitle:'Ustawienia', hapticBead:'Mikrowibracja przy każdym węzełku / paciorku', hapticComplete:'Wibracja zakończenia', hapticCompleteHint:'33 węzełki, dziesiątka lub cały sznur/różaniec', sound:'Dźwięk paciorka / węzełka', remind:'Przypomnij, jeśli się zamyślę', remindHint:'Włącza się, gdy minie dwa razy więcej czasu niż ostatni rytm', remindStrong:'Silniejsza wibracja przypomnienia', remindStrongHint:'Dłuższa wibracja, żebyś na pewno zauważył', wakeLock:'Nie wygaszaj ekranu', langLabel:'Język', langHint:'Dotyczy całej aplikacji', bigPrayerLabel:'Modlitwa na dużym paciorku', bigPrayerHint:'Przed każdą dziesiątką', bigPater:'Ojcze nasz', bigGloria:'Chwała Ojcu', bigNone:'Brak', vibNote:'To urządzenie/przeglądarka nie wspiera wibracji (np. iOS Safari). Użyj dźwięku jako alternatywy.', resetBtn:'Zresetuj liczniki', confirmReset:'Zresetować liczniki tej modlitwy?', close:'Zamknij', startHint:'Przesuń w górę lub w dół, aby zacząć' },
+  ro: { tabName_ortho:'Metanii', tabAria_ortho:'Metanii ortodoxe', tabName_rosary:'Rozariu', tabAria_rosary:'Rozariu catolic', undo:'Anulare', toggleTheme:'Schimbă tema', settingsAria:'Setări', prayerSelectAria:'Rugăciune', countKnots:'Noduri', countRosariesOrtho:'Metanii', countBead:'Mărgea', countDecade:'Decadă', countRosariesR:'Rozarii', optgroupPrayers:'Rugăciuni', optgroupMine:'Ale mele', freeOption:'✎ Scrie-o pe a ta…', inputPlaceholder:'Scrie rugăciunea ta…', save:'Salvează', deletePrayer:'Șterge această rugăciune', confirmDelete:'Ștergi această rugăciune?', settingsTitle:'Setări', hapticBead:'Micro-vibrație la fiecare nod / mărgea', hapticComplete:'Vibrație la finalizare', hapticCompleteHint:'33 de noduri, o decadă sau un rozariu complet', sound:'Sunet la mărgea / nod', remind:'Amintește-mi dacă mă rătăcesc', remindHint:'Se declanșează când trece de două ori ritmul ultimelor două noduri', remindStrong:'Vibrație de reamintire mai puternică', remindStrongHint:'O vibrație mai lungă, ca să o observi cu siguranță', wakeLock:'Păstrează ecranul aprins', langLabel:'Limbă', langHint:'Se aplică în toată aplicația', bigPrayerLabel:'Rugăciune la mărgeaua mare', bigPrayerHint:'Înainte de fiecare decadă', bigPater:'Tatăl nostru', bigGloria:'Slavă Tatălui', bigNone:'Niciuna', vibNote:'Acest dispozitiv/browser nu suportă vibrația (de ex. iOS Safari). Folosește sunetul ca alternativă.', resetBtn:'Resetează contoarele', confirmReset:'Resetezi contoarele pentru această rugăciune?', close:'Închide', startHint:'Glisați în sus sau în jos pentru a începe' },
+  ru: { tabName_ortho:'Чётки', tabAria_ortho:'Православные чётки', tabName_rosary:'Розарий', tabAria_rosary:'Католический розарий', undo:'Отмена', toggleTheme:'Сменить тему', settingsAria:'Настройки', prayerSelectAria:'Молитва', countKnots:'Узлы', countRosariesOrtho:'Чётки', countBead:'Бусина', countDecade:'Десяток', countRosariesR:'Розарии', optgroupPrayers:'Молитвы', optgroupMine:'Мои', freeOption:'✎ Написать свою…', inputPlaceholder:'Напишите свою молитву…', save:'Сохранить', deletePrayer:'Удалить эту молитву', confirmDelete:'Удалить эту молитву?', settingsTitle:'Настройки', hapticBead:'Вибрация на каждом узле / бусине', hapticComplete:'Вибрация при завершении', hapticCompleteHint:'33 узла, десяток или полные чётки', sound:'Звук при узле / бусине', remind:'Напоминать, если забудешься', remindHint:'Срабатывает, когда пройдёт вдвое больше времени, чем между последними двумя узлами', remindStrong:'Более сильная вибрация напоминания', remindStrongHint:'Более долгая вибрация, чтобы точно заметить', wakeLock:'Не выключать экран', langLabel:'Язык', langHint:'Действует во всём приложении', bigPrayerLabel:'Молитва на большой бусине', bigPrayerHint:'Перед каждым десятком', bigPater:'Отче наш', bigGloria:'Слава Отцу', bigNone:'Нет', vibNote:'Это устройство/браузер не поддерживает вибрацию (например, iOS Safari). Используйте звук как альтернативу.', resetBtn:'Сбросить счётчики', confirmReset:'Сбросить счётчики для этой молитвы?', close:'Закрыть', startHint:'Смахните вверх или вниз, чтобы начать' },
+  uk: { tabName_ortho:'Чотки', tabAria_ortho:'Православні чотки', tabName_rosary:'Розарій', tabAria_rosary:'Католицький розарій', undo:'Скасувати', toggleTheme:'Змінити тему', settingsAria:'Налаштування', prayerSelectAria:'Молитва', countKnots:'Вузли', countRosariesOrtho:'Чотки', countBead:'Бусина', countDecade:'Десяток', countRosariesR:'Розарії', optgroupPrayers:'Молитви', optgroupMine:'Мої', freeOption:'✎ Написати свою…', inputPlaceholder:'Напишіть свою молитву…', save:'Зберегти', deletePrayer:'Видалити цю молитву', confirmDelete:'Видалити цю молитву?', settingsTitle:'Налаштування', hapticBead:'Мікровібрація на кожному вузлі / бусині', hapticComplete:'Вібрація завершення', hapticCompleteHint:'33 вузли, десяток або повні чотки/розарій', sound:'Звук бусини / вузла', remind:'Нагадати, якщо забудуся', remindHint:'Спрацьовує, коли минає вдвічі більше часу, ніж останній ритм', remindStrong:'Сильніша вібрація нагадування', remindStrongHint:'Довша вібрація, щоб точно помітити', wakeLock:'Не вимикати екран', langLabel:'Мова', langHint:'Стосується всього застосунку', bigPrayerLabel:'Молитва на великій бусині', bigPrayerHint:'Перед кожним десятком', bigPater:'Отче наш', bigGloria:'Слава Отцю', bigNone:'Немає', vibNote:'Цей пристрій/браузер не підтримує вібрацію (напр. iOS Safari). Використовуйте звук замість неї.', resetBtn:'Скинути лічильники', confirmReset:'Скинути лічильники цієї молитви?', close:'Закрити', startHint:'Проведіть пальцем вгору або вниз, щоб почати' },
+  bg: { tabName_ortho:'Молитвена връв', tabAria_ortho:'Православна молитвена връв', tabName_rosary:'Розарий', tabAria_rosary:'Католически розарий', undo:'Отмени', toggleTheme:'Смени темата', settingsAria:'Настройки', prayerSelectAria:'Молитва', countKnots:'Възли', countRosariesOrtho:'Връви', countBead:'Зърно', countDecade:'Десетка', countRosariesR:'Розарии', optgroupPrayers:'Молитви', optgroupMine:'Мои', freeOption:'✎ Напиши своя…', inputPlaceholder:'Напиши своята молитва…', save:'Запази', deletePrayer:'Изтрий тази молитва', confirmDelete:'Изтриване на тази молитва?', settingsTitle:'Настройки', hapticBead:'Микровибрация при всеки възел / зърно', hapticComplete:'Вибрация при завършване', hapticCompleteHint:'33 възела, десетка или цяла връв/розарий', sound:'Звук при зърно / възел', remind:'Напомни ми, ако се разсея', remindHint:'Задейства се, когато измине двойно повече време от последния ритъм', remindStrong:'По-силна вибрация за напомняне', remindStrongHint:'По-дълга вибрация, за да я усетиш сигурно', wakeLock:'Не изключвай екрана', langLabel:'Език', langHint:'Отнася се за цялото приложение', bigPrayerLabel:'Молитва на голямото зърно', bigPrayerHint:'Преди всяка десетка', bigPater:'Отче наш', bigGloria:'Слава на Отца', bigNone:'Няма', vibNote:'Това устройство/браузър не поддържа вибрация (напр. iOS Safari). Използвай звука като алтернатива.', resetBtn:'Нулирай броячите', confirmReset:'Нулиране на броячите за тази молитва?', close:'Затвори', startHint:'Плъзни нагоре или надолу, за да започнеш' },
+  sr: { tabName_ortho:'Бројаница', tabAria_ortho:'Православна бројаница', tabName_rosary:'Розарио', tabAria_rosary:'Католички розарио', undo:'Опозови', toggleTheme:'Промени тему', settingsAria:'Подешавања', prayerSelectAria:'Молитва', countKnots:'Чворови', countRosariesOrtho:'Бројанице', countBead:'Зрно', countDecade:'Десетак', countRosariesR:'Розарији', optgroupPrayers:'Молитве', optgroupMine:'Моје', freeOption:'✎ Напиши своју…', inputPlaceholder:'Напиши своју молитву…', save:'Сачувај', deletePrayer:'Обриши ову молитву', confirmDelete:'Обрисати ову молитву?', settingsTitle:'Подешавања', hapticBead:'Микровибрација на сваком чвору / зрну', hapticComplete:'Вибрација при завршетку', hapticCompleteHint:'33 чвора, десетак или цела бројаница/розарио', sound:'Звук зрна / чвора', remind:'Подсети ме ако се занесем', remindHint:'Активира се када прође дупло више времена него последњи ритам', remindStrong:'Јача вибрација подсетника', remindStrongHint:'Дужа вибрација, да сигурно приметиш', wakeLock:'Не гаси екран', langLabel:'Језик', langHint:'Важи за целу апликацију', bigPrayerLabel:'Молитва на великом зрну', bigPrayerHint:'Пре сваког десетка', bigPater:'Оче наш', bigGloria:'Слава Оцу', bigNone:'Ниједна', vibNote:'Овај уређај/прегледач не подржава вибрацију (нпр. iOS Safari). Користи звук као алтернативу.', resetBtn:'Ресетуј бројаче', confirmReset:'Ресетовати бројаче за ову молитву?', close:'Затвори', startHint:'Превуци нагоре или надоле да почнеш' },
+  hr: { tabName_ortho:'Molitveni Konopac', tabAria_ortho:'Pravoslavni molitveni konopac', tabName_rosary:'Krunica', tabAria_rosary:'Katolička krunica', undo:'Poništi', toggleTheme:'Promijeni temu', settingsAria:'Postavke', prayerSelectAria:'Molitva', countKnots:'Čvorovi', countRosariesOrtho:'Konopci', countBead:'Zrno', countDecade:'Deseterica', countRosariesR:'Krunice', optgroupPrayers:'Molitve', optgroupMine:'Moje', freeOption:'✎ Napiši svoju…', inputPlaceholder:'Napiši svoju molitvu…', save:'Spremi', deletePrayer:'Izbriši ovu molitvu', confirmDelete:'Izbrisati ovu molitvu?', settingsTitle:'Postavke', hapticBead:'Mikrovibracija na svakom čvoru / zrnu', hapticComplete:'Vibracija pri završetku', hapticCompleteHint:'33 čvora, deseterica ili cijela krunica', sound:'Zvuk zrna / čvora', remind:'Podsjeti me ako se zanesem', remindHint:'Aktivira se kad prođe dvostruko više vremena od posljednjeg ritma', remindStrong:'Jača vibracija podsjetnika', remindStrongHint:'Duža vibracija, da sigurno primijetiš', wakeLock:'Ne gasi zaslon', langLabel:'Jezik', langHint:'Vrijedi za cijelu aplikaciju', bigPrayerLabel:'Molitva na velikom zrnu', bigPrayerHint:'Prije svake deseterice', bigPater:'Oče naš', bigGloria:'Slava Ocu', bigNone:'Nijedna', vibNote:'Ovaj uređaj/preglednik ne podržava vibraciju (npr. iOS Safari). Koristi zvuk kao alternativu.', resetBtn:'Resetiraj brojače', confirmReset:'Resetirati brojače ove molitve?', close:'Zatvori', startHint:'Povuci gore ili dolje da počneš' },
+  cs: { tabName_ortho:'Modlitební Šňůra', tabAria_ortho:'Pravoslavná modlitební šňůra', tabName_rosary:'Růženec', tabAria_rosary:'Katolický růženec', undo:'Zpět', toggleTheme:'Změnit téma', settingsAria:'Nastavení', prayerSelectAria:'Modlitba', countKnots:'Uzly', countRosariesOrtho:'Šňůry', countBead:'Zrnko', countDecade:'Desátek', countRosariesR:'Růžence', optgroupPrayers:'Modlitby', optgroupMine:'Moje', freeOption:'✎ Napiš svou…', inputPlaceholder:'Napiš svou modlitbu…', save:'Uložit', deletePrayer:'Odstranit tuto modlitbu', confirmDelete:'Odstranit tuto modlitbu?', settingsTitle:'Nastavení', hapticBead:'Mikrovibrace na každém uzlu / zrnku', hapticComplete:'Vibrace při dokončení', hapticCompleteHint:'33 uzlů, desátek nebo celý růženec', sound:'Zvuk zrnka / uzlu', remind:'Připomeň mi, když se zapovídám', remindHint:'Spustí se, když uplyne dvojnásobek posledního rytmu', remindStrong:'Silnější připomínací vibrace', remindStrongHint:'Delší vibrace, aby sis jí byl jistý', wakeLock:'Nechat obrazovku rozsvícenou', langLabel:'Jazyk', langHint:'Platí pro celou aplikaci', bigPrayerLabel:'Modlitba na velkém zrnku', bigPrayerHint:'Před každým desátkem', bigPater:'Otče náš', bigGloria:'Sláva Otci', bigNone:'Žádná', vibNote:'Toto zařízení/prohlížeč nepodporuje vibrace (např. iOS Safari). Použij zvuk jako alternativu.', resetBtn:'Vynulovat počítadla', confirmReset:'Vynulovat počítadla této modlitby?', close:'Zavřít', startHint:'Přejeď nahoru nebo dolů pro začátek' },
+  sk: { tabName_ortho:'Modlitebná Šnúra', tabAria_ortho:'Pravoslávna modlitebná šnúra', tabName_rosary:'Ruženec', tabAria_rosary:'Katolícky ruženec', undo:'Späť', toggleTheme:'Zmeniť tému', settingsAria:'Nastavenia', prayerSelectAria:'Modlitba', countKnots:'Uzly', countRosariesOrtho:'Šnúry', countBead:'Zrnko', countDecade:'Desiatok', countRosariesR:'Ružence', optgroupPrayers:'Modlitby', optgroupMine:'Moje', freeOption:'✎ Napíš svoju…', inputPlaceholder:'Napíš svoju modlitbu…', save:'Uložiť', deletePrayer:'Odstrániť túto modlitbu', confirmDelete:'Odstrániť túto modlitbu?', settingsTitle:'Nastavenia', hapticBead:'Mikrovibrácia pri každom uzle / zrnku', hapticComplete:'Vibrácia pri dokončení', hapticCompleteHint:'33 uzlov, desiatok alebo celý ruženec', sound:'Zvuk zrnka / uzla', remind:'Pripomeň mi, keď sa zamyslím', remindHint:'Spustí sa, keď uplynie dvojnásobok posledného rytmu', remindStrong:'Silnejšia pripomínacia vibrácia', remindStrongHint:'Dlhšia vibrácia, aby si si ju bol istý', wakeLock:'Nechať obrazovku zapnutú', langLabel:'Jazyk', langHint:'Platí pre celú aplikáciu', bigPrayerLabel:'Modlitba na veľkom zrnku', bigPrayerHint:'Pred každým desiatkom', bigPater:'Otče náš', bigGloria:'Sláva Otcu', bigNone:'Žiadna', vibNote:'Toto zariadenie/prehliadač nepodporuje vibrácie (napr. iOS Safari). Použi zvuk ako alternatívu.', resetBtn:'Vynulovať počítadlá', confirmReset:'Vynulovať počítadlá tejto modlitby?', close:'Zavrieť', startHint:'Potiahni nahor alebo nadol, aby si začal' },
+  sv: { tabName_ortho:'Bönerep', tabAria_ortho:'Ortodoxt bönerep', tabName_rosary:'Radband', tabAria_rosary:'Katolskt radband', undo:'Ångra', toggleTheme:'Byt tema', settingsAria:'Inställningar', prayerSelectAria:'Bön', countKnots:'Knutar', countRosariesOrtho:'Rep', countBead:'Pärla', countDecade:'Decad', countRosariesR:'Radband', optgroupPrayers:'Böner', optgroupMine:'Mina', freeOption:'✎ Skriv din egen…', inputPlaceholder:'Skriv din bön…', save:'Spara', deletePrayer:'Ta bort denna bön', confirmDelete:'Ta bort denna bön?', settingsTitle:'Inställningar', hapticBead:'Mikrovibration vid varje knut / pärla', hapticComplete:'Vibration vid avslutning', hapticCompleteHint:'33 knutar, en decad eller ett helt radband', sound:'Klickljud vid pärla / knut', remind:'Påminn mig om jag tappar tråden', remindHint:'Aktiveras när dubbla tiden av senaste rytmen har gått', remindStrong:'Starkare påminnelsevibration', remindStrongHint:'En längre vibration, så att du säkert märker den', wakeLock:'Håll skärmen tänd', langLabel:'Språk', langHint:'Gäller för hela appen', bigPrayerLabel:'Bön vid den stora pärlan', bigPrayerHint:'Före varje decad', bigPater:'Vår Fader', bigGloria:'Ära vare Fadern', bigNone:'Ingen', vibNote:'Denna enhet/webbläsare stöder inte vibration (t.ex. iOS Safari). Använd ljud som alternativ.', resetBtn:'Återställ räknare', confirmReset:'Återställa räknarna för denna bön?', close:'Stäng', startHint:'Svep upp eller ner för att börja' },
+  la: { tabName_ortho:'Chorda Precatoria', tabAria_ortho:'Chorda precatoria orthodoxa', tabName_rosary:'Rosarium', tabAria_rosary:'Rosarium catholicum', undo:'Deshabuit', toggleTheme:'Mutare Themam', settingsAria:'Configurationes', prayerSelectAria:'Oratio', countKnots:'Nodi', countRosariesOrtho:'Chordae', countBead:'Globulus', countDecade:'Decas', countRosariesR:'Rosaria', optgroupPrayers:'Orationes', optgroupMine:'Meae', freeOption:'✎ Scribe tuam…', inputPlaceholder:'Scribe orationem tuam…', save:'Serva', deletePrayer:'Dele hanc orationem', confirmDelete:'Delere hanc orationem?', settingsTitle:'Configurationes', hapticBead:'Vibratio levis in quoque nodo / globulo', hapticComplete:'Vibratio completionis', hapticCompleteHint:'33 nodi, decas, aut rosarium integrum', sound:'Sonus globuli / nodi', remind:'Me admone si oblitus fuero', remindHint:'Fit cum duplum tempus ultimorum duorum nodorum transierit', remindStrong:'Vibratio admonitionis fortior', remindStrongHint:'Vibratio longior, ut certe animadvertas', wakeLock:'Monitorem illuminatum tenere', langLabel:'Lingua', langHint:'Ad totam applicationem pertinet', bigPrayerLabel:'Oratio in globulo magno', bigPrayerHint:'Ante quamque decadem', bigPater:'Pater Noster', bigGloria:'Gloria Patri', bigNone:'Nulla', vibNote:'Hoc instrumentum/navigator vibrationem non sustinet (e.g. iOS Safari). Utere sono ut alternativa.', resetBtn:'Numeros restitue', confirmReset:'Restituere numeros huius orationis?', close:'Claude', startHint:'Move sursum aut deorsum ut incipias' },
+  ar: { tabName_ortho:'مسبحة الصلاة', tabAria_ortho:'مسبحة الصلاة الأرثوذكسية', tabName_rosary:'المسبحة', tabAria_rosary:'المسبحة الكاثوليكية', undo:'تراجع', toggleTheme:'تبديل المظهر', settingsAria:'الإعدادات', prayerSelectAria:'الصلاة', countKnots:'العُقَد', countRosariesOrtho:'المسابح', countBead:'الحبة', countDecade:'العشرية', countRosariesR:'المسابح', optgroupPrayers:'الصلوات', optgroupMine:'صلواتي', freeOption:'✎ اكتب صلاتك الخاصة…', inputPlaceholder:'اكتب صلاتك…', save:'حفظ', deletePrayer:'حذف هذه الصلاة', confirmDelete:'حذف هذه الصلاة؟', settingsTitle:'الإعدادات', hapticBead:'رجفة خفيفة عند كل عقدة / حبة', hapticComplete:'رجفة عند الإتمام', hapticCompleteHint:'33 عقدة، أو عشرية، أو مسبحة كاملة', sound:'صوت عند الحبة / العقدة', remind:'ذكّرني إن نسيت', remindHint:'يعمل عندما يمر ضعف زمن آخر إيقاع', remindStrong:'رجفة تذكير أقوى', remindStrongHint:'رجفة أطول لتتأكد من ملاحظتها', wakeLock:'إبقاء الشاشة مضاءة', langLabel:'اللغة', langHint:'تُطبَّق على التطبيق كله', bigPrayerLabel:'الصلاة عند الحبة الكبيرة', bigPrayerHint:'قبل كل عشرية', bigPater:'الصلاة الربانية', bigGloria:'المجد للآب', bigNone:'بدون', vibNote:'هذا الجهاز/المتصفح لا يدعم الرجفة (مثل iOS Safari). استخدم الصوت كبديل.', resetBtn:'إعادة ضبط العدادات', confirmReset:'إعادة ضبط عدادات هذه الصلاة؟', close:'إغلاق', startHint:'اسحب للأعلى أو للأسفل للبدء' }
+};
+
+(() => {
+'use strict';
+
+/* ---------- Σταθερές ---------- */
+const STEP = 52;
+const TOTAL_KNOTS = 33;
+const BEADS_PER_DECADE = 10, DECADES = 5, CYCLE = 11;
+const DEFAULT_INTERVAL_MS = 2000;
+const MIN_REMIND_MS = 800;
+const MAX_INTERVAL_MS = 30000;
+const KEY = 'erosary.v7';
+
+/* ---------- Επίπεδα αφοσίωσης της ημέρας («παιχνιδάκι», όχι θεολογική κρίση) ---------- */
+const LEVELS = {
+  en: ['Beginning the Path', 'Humble Pilgrim', 'Steadfast in Prayer', 'Flame of Faith', 'Light in the Darkness', 'Foretaste of Paradise'],
+  el: ['Πρώτα Βήματα', 'Ταπεινός Προσκυνητής', 'Σταθερός στην Προσευχή', 'Φλόγα Πίστης', 'Φως εν τη Σκοτία', 'Πρόγευση Παραδείσου']
+};
+const LEVEL_THRESHOLDS = [0, 1, 3, 6, 10, 15]; // ολοκληρωμένα κομποσχοίνια/ροζάρια ΣΗΜΕΡΑ· στα 15 φτάνει στο μέγιστο
+const GIFT_BONUS_LAPS = 4; // μια προσφορά ανεβάζει προσωρινά τη σημερινή πρόοδο κατά τόσα «περάσματα»
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+/* ---------- Κατάσταση & αποθήκευση ---------- */
+const defaults = () => ({
+  mode: 'ortho',
+  theme: (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark',
+  lang: 'en',
+  settings: { hapticBead: true, hapticComplete: true, sound: false, remind: true, remindStrong: false, wakeLock: true, bigPrayer: 'pater' },
+  selected: { ortho: 'b:0', rosary: 'b:0' },
+  free: { ortho: '', rosary: '' },
+  custom: [],
+  counts: { ortho: { bead: 0, rosary: 0 }, rosary: { bead: 0, decade: 0, rosary: 0, pos: 0 } },
+  support: { count: 0 },
+  daily: { date: todayStr(), laps: 0, blessedToday: false }
+});
+
+function load() {
+  const d = defaults();
+  let s = {};
+  try { s = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
+  const out = {
+    ...d, ...s,
+    settings: { ...d.settings, ...(s.settings || {}) },
+    selected: { ...d.selected, ...(s.selected || {}) },
+    free: { ...d.free, ...(s.free || {}) },
+    custom: Array.isArray(s.custom) ? s.custom.filter(c => c && c.id && c.text) : [],
+    counts: {
+      ortho: { ...d.counts.ortho, ...((s.counts || {}).ortho || {}) },
+      rosary: { ...d.counts.rosary, ...((s.counts || {}).rosary || {}) }
+    },
+    support: { ...d.support, ...(s.support || {}) },
+    daily: { ...d.daily, ...(s.daily || {}) }
+  };
+  if (out.daily.date !== todayStr()) out.daily = { date: todayStr(), laps: 0, blessedToday: false };
+  if (out.mode !== 'ortho' && out.mode !== 'rosary') out.mode = 'ortho';
+  if (out.theme !== 'dark' && out.theme !== 'light') out.theme = 'dark';
+  if (typeof out.lang !== 'string' || !LANGS.includes(out.lang)) out.lang = 'en';
+  return out;
+}
+const S = load();
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+const $ = id => document.getElementById(id);
+const root = document.documentElement;
+const rope = $('rope'), track = $('track'), stage = $('stage');
+const sel = $('prayer-select'), customBox = $('custom-box'), prayerInput = $('prayer-input');
+const undoBtn = $('undo-btn'), overlay = $('overlay');
+const cur = () => S.counts[S.mode];
+const L = () => S.lang;
+const T = () => STR[L()];
+
+let hist = [];
+let override = null, overrideTimer = null;
+let animTimer = null, idleTimer = null;
+let lastSwipe = null, lastIntervalMs = DEFAULT_INTERVAL_MS;
+let swipeDir = null;       // 1 = κάτω, -1 = πάνω· κλειδώνει στην πρώτη πραγματική κίνηση αυτής της συνεδρίας
+let firstPassDone = false;
+
+/* ---------- Δόνηση / ήχος ----------
+   Μέσα στην native εφαρμογή (Capacitor) καλούμε το δικό μας native plugin
+   "Vibrate", που μιλάει απευθείας στο Android Vibrator API· αυτό δουλεύει
+   αξιόπιστα ακόμα και σε συσκευές (π.χ. ορισμένα Xiaomi/MIUI) όπου το
+   navigator.vibrate() μέσα σε WebView/Chrome αναφέρει επιτυχία αλλά το
+   λειτουργικό σβήνει σιωπηλά την πραγματική δόνηση.
+   Αν η εφαρμογή ανοίγει απλά σε browser (π.χ. για δοκιμή), κάνουμε fallback
+   στο κανονικό navigator.vibrate(). */
+function vibrate(p) {
+  const nativeVibrate = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Vibrate;
+  if (nativeVibrate) {
+    try {
+      if (Array.isArray(p)) nativeVibrate.vibrate({ pattern: p });
+      else nativeVibrate.vibrate({ duration: p });
+    } catch (e) {}
+    return true;
+  }
+  if (typeof navigator.vibrate === 'function') {
+    try { return navigator.vibrate(p); } catch (e) {}
+  }
+  return false;
+}
+
+let actx = null;
+function audio() {
+  if (!actx) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null; actx = new AC(); }
+  if (actx.state === 'suspended') actx.resume();
+  return actx;
+}
+function tone(f0, f1, dur, type, gain, when = 0) {
+  const a = audio(); if (!a) return;
+  const t = a.currentTime + when;
+  const o = a.createOscillator(), g = a.createGain();
+  o.type = type;
+  o.frequency.setValueAtTime(f0, t);
+  if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(gain, t + 0.005);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(a.destination);
+  o.start(t); o.stop(t + dur + 0.02);
+}
+function clickSound(kind) {
+  if (!S.settings.sound) return;
+  if (S.mode === 'ortho') tone(220, 110, 0.10, 'sine', 0.35);
+  else if (kind === 'big') tone(420, 260, 0.20, 'triangle', 0.4);
+  else tone(1200, 600, 0.05, 'triangle', 0.25);
+}
+function chime() {
+  if (!S.settings.sound) return;
+  tone(660, 660, 0.6, 'sine', 0.25);
+  tone(990, 990, 0.8, 'sine', 0.15, 0.12);
+}
+
+/* ---------- Οθόνη αναμμένη ---------- */
+let wl = null;
+async function requestWake() {
+  if (!S.settings.wakeLock || !('wakeLock' in navigator) || document.visibilityState !== 'visible' || wl) return;
+  try { wl = await navigator.wakeLock.request('screen'); wl.addEventListener('release', () => { wl = null; }); } catch (e) { wl = null; }
+}
+function releaseWake() { if (wl) { wl.release().catch(() => {}); wl = null; } }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') requestWake(); });
+
+/* ---------- Κρεμαστός σταυρός ---------- */
+function renderPendant() {
+  const pendant = $('pendant');
+  if (S.mode === 'ortho') {
+    pendant.innerHTML =
+      '<svg viewBox="0 0 26 40"><g fill="var(--metal)">' +
+      '<rect x="11" y="2" width="4" height="34" rx="1.5"/>' +
+      '<rect x="4" y="8" width="18" height="3.4" rx="1.4"/>' +
+      '<rect x="6.5" y="18" width="13" height="3.4" rx="1.4"/>' +
+      '<rect x="8.5" y="28" width="9" height="3" rx="1.3" transform="rotate(-10 13 29.5)"/>' +
+      '</g></svg>';
+  } else {
+    pendant.innerHTML =
+      '<svg viewBox="0 0 26 40"><g fill="var(--metal)">' +
+      '<rect x="11" y="2" width="4" height="34" rx="1.5"/>' +
+      '<rect x="4" y="12" width="18" height="4" rx="1.6"/>' +
+      '</g></svg>';
+  }
+}
+
+/* ---------- Γραφικό (track) ---------- */
+let N = 9, slots = [];
+const kindAt = j => S.mode === 'ortho'
+  ? ((((j % TOTAL_KNOTS) + TOTAL_KNOTS) % TOTAL_KNOTS) === 0 ? 'cross' : 'knot')
+  : ((((j % CYCLE) + CYCLE) % CYCLE) === 0 ? 'big' : 'bead');
+
+function buildSlots() {
+  finalizeAnim();
+  const h = rope.clientHeight || 400;
+  N = Math.max(7, Math.ceil(h / STEP) + 2);
+  if (N % 2 === 0) N++;
+  track.style.height = (N * STEP) + 'px';
+  track.style.top = ((h - N * STEP) / 2) + 'px';
+  track.innerHTML = '';
+  slots = [];
+  for (let i = 0; i < N; i++) {
+    const d = document.createElement('div');
+    d.className = 'slot';
+    track.appendChild(d);
+    slots.push(d);
+  }
+  renderTrack();
+}
+function renderTrack() {
+  const F = (N - 1) / 2;
+  const pos = S.mode === 'rosary' ? cur().pos : cur().bead;
+  const d = swipeDir || 1;
+  slots.forEach((slot, s) => {
+    const k = kindAt(pos + d * (F - s));
+    if (slot.dataset.k !== k) {
+      slot.dataset.k = k;
+      slot.innerHTML = k === 'knot' ? '<div class="knot"></div>'
+        : k === 'big' ? '<div class="bead big"></div>'
+        : k === 'cross' ? '<div class="knot-cross"><svg viewBox="0 0 26 34" width="26" height="34"><g fill="var(--metal)"><rect x="10" y="0" width="4" height="30" rx="1.5"/><rect x="3" y="6" width="18" height="3.4" rx="1.4"/><rect x="5.5" y="15" width="13" height="3.4" rx="1.4"/></g></svg></div>'
+        : '<div class="bead"></div>';
+    }
+  });
+}
+function endAnim() {
+  track.style.transition = 'none';
+  renderTrack();
+  track.style.transform = 'translateY(0)';
+  void track.offsetHeight;
+}
+function finalizeAnim() {
+  if (animTimer) { clearTimeout(animTimer); animTimer = null; endAnim(); }
+}
+function animateStep() {
+  const d = swipeDir || 1;
+  track.style.transition = 'transform .22s cubic-bezier(.25,1,.5,1)';
+  track.style.transform = 'translateY(' + (STEP * d) + 'px)';
+  animTimer = setTimeout(() => { animTimer = null; endAnim(); }, 230);
+}
+
+function renderCounters() {
+  const c = cur(), o = override || {}, t = T();
+  const bead = o.bead !== undefined ? o.bead : c.bead;
+  const el = $('counters');
+  if (S.mode === 'ortho') {
+    el.innerHTML = t.countKnots + ' <span>' + bead + '</span> / ' + TOTAL_KNOTS +
+      ' &nbsp;|&nbsp; ' + t.countRosariesOrtho + ' <span>' + c.rosary + '</span>';
+  } else {
+    const dec = (o.decade !== undefined ? o.decade : c.decade) + 1;
+    el.innerHTML = t.countBead + ' <span>' + bead + '</span> / ' + BEADS_PER_DECADE +
+      ' &nbsp;·&nbsp; ' + t.countDecade + ' <span>' + dec + '</span> / ' + DECADES +
+      ' &nbsp;·&nbsp; ' + t.countRosariesR + ' <span>' + c.rosary + '</span>';
+  }
+  undoBtn.disabled = hist.length === 0;
+  renderHoliness();
+}
+function ensureDaily() {
+  if (!S.daily) S.daily = { date: todayStr(), laps: 0, blessedToday: false };
+  if (S.daily.date !== todayStr()) { S.daily.date = todayStr(); S.daily.laps = 0; S.daily.blessedToday = false; }
+}
+function lapProgressFraction() {
+  // πρόοδος μέσα στο τρέχον, ανολοκλήρωτο κομποσχοίνι/ροζάριο (0..1) — για ζωντανή, ανά-πέρασμα ανάδραση
+  if (S.mode === 'ortho') return S.counts.ortho.bead / TOTAL_KNOTS;
+  const c = S.counts.rosary;
+  return (c.decade * BEADS_PER_DECADE + c.bead) / (DECADES * BEADS_PER_DECADE);
+}
+function holinessLevel(laps) {
+  let lvl = 0;
+  for (let i = 0; i < LEVEL_THRESHOLDS.length; i++) if (laps >= LEVEL_THRESHOLDS[i]) lvl = i;
+  return lvl;
+}
+function renderHoliness() {
+  ensureDaily();
+  const max = LEVEL_THRESHOLDS.length - 1;
+  const laps = S.daily.laps;
+  const lvl = holinessLevel(laps);
+  const names = LEVELS[L()] || LEVELS.en;
+  const el = $('holiness');
+  if (el) el.textContent = '✦ ' + (names[lvl] || names[0]);
+  const gate = $('paradise-gate');
+  if (gate) {
+    // ομαλή, συνεχής αύξηση μέσα στο επίπεδο — αλλάζει σε κάθε πέρασμα κόμπου/χάνδρας, όχι μόνο σε ολοκλήρωση
+    const prevT = LEVEL_THRESHOLDS[lvl];
+    const nextT = LEVEL_THRESHOLDS[Math.min(lvl + 1, max)];
+    const span = Math.max(nextT - prevT, 1);
+    const within = lvl >= max ? 1 : Math.min((laps - prevT + lapProgressFraction()) / span, 1);
+    const frac = (lvl + within) / max;
+    // ξεκινά μικρή/αχνή και φτάνει σχεδόν στο μήκος του ορατού κομποσχοινιού, αισθητά πιο φωτεινή, στα 15 κομποσχοίνια της ημέρας
+    gate.style.opacity = (0.05 + frac * 0.95).toFixed(3);
+    gate.style.setProperty('--gate-h', (14 + frac * 84) + '%');
+    gate.classList.toggle('blessed', !!S.daily.blessedToday);
+  }
+}
+function flashBlessing() {
+  const f = $('blessing-flash');
+  if (!f) return;
+  f.classList.remove('flash');
+  void f.offsetWidth;
+  f.classList.add('flash');
+  setTimeout(() => f.classList.remove('flash'), 2900);
+}
+function setOverride(o) {
+  override = o;
+  clearTimeout(overrideTimer);
+  overrideTimer = setTimeout(() => { override = null; renderCounters(); }, 750);
+}
+function clearOverride() { override = null; clearTimeout(overrideTimer); }
+
+/* ---------- Προσευχές ---------- */
+function buildSelect() {
+  const t = T();
+  sel.innerHTML = '';
+  const g1 = document.createElement('optgroup'); g1.label = t.optgroupPrayers;
+  PRAYERS[S.mode][L()].forEach((txt, i) => g1.appendChild(new Option(txt, 'b:' + i)));
+  sel.appendChild(g1);
+  if (S.custom.length) {
+    const g2 = document.createElement('optgroup'); g2.label = t.optgroupMine;
+    S.custom.forEach(c => g2.appendChild(new Option(c.text, 'c:' + c.id)));
+    sel.appendChild(g2);
+  }
+  sel.appendChild(new Option(t.freeOption, 'free'));
+  let v = S.selected[S.mode];
+  if (![...sel.options].some(o => o.value === v)) v = 'b:0';
+  S.selected[S.mode] = v;
+  sel.value = v;
+  syncFooter();
+}
+function syncFooter() {
+  const v = S.selected[S.mode];
+  customBox.hidden = v !== 'free';
+  $('del-prayer').hidden = !v.startsWith('c:');
+  if (v === 'free') prayerInput.value = S.free[S.mode];
+}
+function prayer() {
+  const v = S.selected[S.mode];
+  if (v.startsWith('b:')) return PRAYERS[S.mode][L()][+v.slice(2)] || '';
+  if (v.startsWith('c:')) { const c = S.custom.find(x => x.id === v.slice(2)); return c ? c.text : ''; }
+  return (S.free[S.mode] || '').trim();
+}
+function spawnPrayer(text) {
+  if (!text) return;
+  const el = document.createElement('div');
+  el.className = 'floating-prayer';
+  el.textContent = text;
+  stage.appendChild(el);
+  const rect = el.getBoundingClientRect();
+  const rise = rect.top + rect.height + 24;
+  el.style.setProperty('--rise', rise + 'px');
+  requestAnimationFrame(() => el.classList.add('rise'));
+  setTimeout(() => el.remove(), 2500);
+}
+
+sel.addEventListener('change', () => { S.selected[S.mode] = sel.value; syncFooter(); save(); sel.blur(); });
+prayerInput.addEventListener('input', () => { S.free[S.mode] = prayerInput.value; save(); });
+$('save-prayer').addEventListener('click', () => {
+  const text = prayerInput.value.trim();
+  if (!text) return;
+  let c = S.custom.find(x => x.text === text);
+  if (!c) { c = { id: Date.now().toString(36), text }; S.custom.push(c); }
+  S.selected[S.mode] = 'c:' + c.id;
+  S.free[S.mode] = '';
+  buildSelect(); save();
+});
+$('del-prayer').addEventListener('click', () => {
+  const v = S.selected[S.mode];
+  if (!v.startsWith('c:') || !confirm(T().confirmDelete)) return;
+  const id = v.slice(2);
+  S.custom = S.custom.filter(x => x.id !== id);
+  ['ortho', 'rosary'].forEach(m => { if (S.selected[m] === v) S.selected[m] = 'b:0'; });
+  buildSelect(); save();
+});
+
+/* ---------- Έναρξη πρώτης κίνησης ---------- */
+function hideStartHint() {
+  const h = $('start-hint');
+  if (!h) return;
+  h.style.opacity = '0';
+  setTimeout(() => h.remove(), 400);
+}
+
+/* ---------- Κύρια λογική: ένα «πέρασμα» κόμπου ---------- */
+function pass() {
+  finalizeAnim();
+  if (!firstPassDone) { firstPassDone = true; hideStartHint(); }
+  const c = cur();
+  hist.push(JSON.stringify(c));
+  if (hist.length > 30) hist.shift();
+  clearOverride();
+  markSwipeTime();
+  requestWake();
+
+  let completed = null, text = '', kind = 'knot';
+  if (S.mode === 'ortho') {
+    c.bead++;
+    text = prayer();
+    if (c.bead >= TOTAL_KNOTS) {
+      c.bead = 0; c.rosary++;
+      completed = { type: 'rosary', override: { bead: TOTAL_KNOTS } };
+    }
+  } else {
+    kind = kindAt(c.pos);
+    if (kind === 'big') text = (BIG_PRAYERS[S.settings.bigPrayer] || BIG_PRAYERS.none)[L()] || '';
+    else { c.bead++; text = prayer(); }
+    c.pos = (c.pos + 1) % CYCLE;
+    if (kind === 'bead' && c.bead >= BEADS_PER_DECADE) {
+      const ov = { bead: BEADS_PER_DECADE, decade: c.decade };
+      c.bead = 0; c.decade++;
+      if (c.decade >= DECADES) { c.decade = 0; c.rosary++; completed = { type: 'rosary', override: ov }; }
+      else completed = { type: 'decade', override: ov };
+    }
+  }
+
+  if (completed) {
+    if (completed.type === 'rosary') { ensureDaily(); S.daily.laps++; }
+    if (S.settings.hapticComplete) vibrate(completed.type === 'rosary' ? [50, 80, 50, 80, 90] : [50, 80, 50]);
+    chime();
+    setOverride(completed.override);
+  } else {
+    if (S.settings.hapticBead) vibrate(kind === 'big' ? 60 : 35);
+    clickSound(kind);
+  }
+  spawnPrayer(text);
+  animateStep();
+  renderCounters();
+  save();
+  scheduleReminder();
+}
+
+function undo() {
+  finalizeAnim();
+  const snap = hist.pop();
+  if (!snap) return;
+  clearOverride();
+  S.counts[S.mode] = JSON.parse(snap);
+  renderTrack(); renderCounters(); save();
+  clearTimeout(idleTimer);
+}
+
+/* ---------- Υπενθύμιση όταν ξεχαστείς ---------- */
+function markSwipeTime() {
+  const now = Date.now();
+  if (lastSwipe !== null) {
+    const dt = now - lastSwipe;
+    if (dt <= MAX_INTERVAL_MS) lastIntervalMs = Math.max(dt, 250);
+  }
+  lastSwipe = now;
+}
+function scheduleReminder() {
+  clearTimeout(idleTimer);
+  if (!S.settings.remind) return;
+  idleTimer = setTimeout(remind, Math.max(lastIntervalMs * 2, MIN_REMIND_MS));
+}
+function remind() {
+  if (document.hidden) return;
+  vibrate(S.settings.remindStrong ? [150, 90, 150, 90, 260] : [40, 60, 40]);
+  rope.classList.remove('pulse'); void rope.offsetWidth; rope.classList.add('pulse');
+  setTimeout(() => rope.classList.remove('pulse'), 600);
+}
+
+/* ---------- Είσοδος: swipe (καθορίζει φορά), πληκτρολόγιο ---------- */
+let startY = null;
+stage.addEventListener('pointerdown', e => { if (e.isPrimary) startY = e.clientY; });
+window.addEventListener('pointerup', e => {
+  if (startY === null) return;
+  const dy = e.clientY - startY; startY = null;
+  if (Math.abs(dy) < 30) return;
+  const dir = dy > 0 ? 1 : -1;
+  if (swipeDir === null) swipeDir = dir;
+  if (dir === swipeDir) pass();
+});
+window.addEventListener('pointercancel', () => { startY = null; });
+
+window.addEventListener('keydown', e => {
+  if (overlay.classList.contains('open')) { if (e.key === 'Escape') closeSettings(); return; }
+  if (e.target.closest && e.target.closest('input,select,textarea,button')) return;
+  if (e.code === 'Space' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (!e.repeat) { if (swipeDir === null) swipeDir = 1; pass(); }
+  } else if (e.key === 'ArrowUp' || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z')) {
+    e.preventDefault(); undo();
+  }
+});
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button'); if (b) b.blur(); });
+
+/* ---------- Μεταφράσεις UI ---------- */
+function buildLangSelect() {
+  const langSel = $('lang-select');
+  langSel.innerHTML = '';
+  LANGS.forEach(code => langSel.appendChild(new Option(LANG_NAMES[code], code)));
+  langSel.value = L();
+}
+function applyStrings() {
+  const t = T(), lc = L();
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    const val = STR[lc][key] !== undefined ? STR[lc][key] : STR.en[key];
+    if (val !== undefined) el.textContent = val;
+  });
+  $('tab-ortho').textContent = t.tabName_ortho;
+  $('tab-ortho').setAttribute('aria-label', t.tabAria_ortho);
+  $('tab-rosary').textContent = t.tabName_rosary;
+  $('tab-rosary').setAttribute('aria-label', t.tabAria_rosary);
+  undoBtn.title = t.undo; undoBtn.setAttribute('aria-label', t.undo);
+  $('theme-btn').setAttribute('aria-label', t.toggleTheme);
+  $('settings-btn').setAttribute('aria-label', t.settingsAria);
+  sel.setAttribute('aria-label', t.prayerSelectAria);
+  prayerInput.placeholder = t.inputPlaceholder;
+  $('save-prayer').textContent = t.save;
+  $('del-prayer').textContent = t.deletePrayer;
+  document.documentElement.lang = lc;
+  document.documentElement.dir = RTL_LANGS.includes(lc) ? 'rtl' : 'ltr';
+}
+
+/* ---------- Mode & θέμα ---------- */
+function applyTheme() {
+  root.dataset.theme = S.theme;
+  const m = document.querySelector('meta[name="theme-color"]');
+  if (m) m.content = getComputedStyle(document.body).backgroundColor;
+}
+function applyMode() {
+  root.dataset.mode = S.mode;
+  $('tab-ortho').setAttribute('aria-selected', S.mode === 'ortho');
+  $('tab-rosary').setAttribute('aria-selected', S.mode === 'rosary');
+  $('row-big').hidden = S.mode !== 'rosary';
+  renderPendant();
+  buildSelect();
+  buildSlots();
+  renderCounters();
+  applyTheme();
+  applyStrings();
+}
+function setMode(m) {
+  if (m === S.mode) return;
+  finalizeAnim(); clearTimeout(idleTimer); clearOverride();
+  S.mode = m; hist = []; lastSwipe = null; lastIntervalMs = DEFAULT_INTERVAL_MS;
+  applyMode(); save();
+}
+$('tab-ortho').addEventListener('click', () => setMode('ortho'));
+$('tab-rosary').addEventListener('click', () => setMode('rosary'));
+$('theme-btn').addEventListener('click', () => { S.theme = S.theme === 'dark' ? 'light' : 'dark'; applyTheme(); save(); });
+undoBtn.addEventListener('click', undo);
+
+/* ---------- Ρυθμίσεις UI ---------- */
+function syncSettingsUI() {
+  overlay.querySelectorAll('[data-key]').forEach(el => {
+    const k = el.dataset.key;
+    if (k === 'lang') { el.value = L(); return; }
+    if (el.type === 'checkbox') el.checked = !!S.settings[k]; else el.value = S.settings[k];
+  });
+  $('row-strong').classList.toggle('disabled', !S.settings.remind);
+  $('vib-note').hidden = !!navigator.vibrate;
+}
+overlay.querySelectorAll('[data-key]').forEach(el => {
+  el.addEventListener('change', () => {
+    const k = el.dataset.key;
+    if (k === 'lang') {
+      S.lang = el.value;
+      buildSelect(); applyStrings(); renderCounters(); save();
+      return;
+    }
+    S.settings[k] = el.type === 'checkbox' ? el.checked : el.value;
+    if (k === 'sound' && S.settings.sound) tone(1200, 600, 0.05, 'triangle', 0.25);
+    if (k === 'hapticBead' && S.settings.hapticBead) vibrate(35);
+    if (k === 'remindStrong' && S.settings.remindStrong) vibrate([150, 90, 150, 90, 260]);
+    if (k === 'wakeLock') { S.settings.wakeLock ? requestWake() : releaseWake(); }
+    if (k === 'remind') { if (!S.settings.remind) clearTimeout(idleTimer); syncSettingsUI(); }
+    save();
+  });
+});
+function openSettings() {
+  syncSettingsUI();
+  $('support-confirm').hidden = true;
+  $('blessing-btn').hidden = false;
+  overlay.classList.add('open');
+}
+function closeSettings() { overlay.classList.remove('open'); }
+$('settings-btn').addEventListener('click', openSettings);
+$('close-settings').addEventListener('click', closeSettings);
+overlay.addEventListener('click', e => { if (e.target === overlay) closeSettings(); });
+$('reset-btn').addEventListener('click', () => {
+  if (!confirm(T().confirmReset)) return;
+  finalizeAnim(); clearOverride(); clearTimeout(idleTimer);
+  S.counts[S.mode] = defaults().counts[S.mode];
+  S.daily = { date: todayStr(), laps: 0, blessedToday: false };
+  hist = [];
+  renderTrack(); renderCounters(); save(); closeSettings();
+});
+
+/* ---------- Υποστήριξη / προαιρετική προσφορά (honor system, χωρίς server) ---------- */
+const blessingBtn = $('blessing-btn'), supportConfirm = $('support-confirm');
+blessingBtn.addEventListener('click', () => {
+  // πρώτα εξηγούμε πού οδηγεί και γιατί είναι ασφαλές, μετά δείχνουμε τα ποσά
+  blessingBtn.hidden = true;
+  supportConfirm.hidden = false;
+});
+$('support-cancel').addEventListener('click', () => {
+  supportConfirm.hidden = true;
+  blessingBtn.hidden = false;
+});
+document.querySelectorAll('.amount-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    window.open(btn.dataset.amountUrl, '_blank', 'noopener');
+    if (!S.support) S.support = { count: 0 };
+    S.support.count = (S.support.count || 0) + 1;
+    ensureDaily();
+    S.daily.laps += GIFT_BONUS_LAPS;
+    S.daily.blessedToday = true;
+    save();
+    renderHoliness();
+    flashBlessing();
+    supportConfirm.hidden = true;
+    blessingBtn.hidden = false;
+    const note = $('support-note');
+    note.textContent = (T().supportThanks || STR.en.supportThanks);
+    note.hidden = false;
+    clearTimeout(note._t);
+    note._t = setTimeout(() => { note.hidden = true; }, 4500);
+    if (S.settings.hapticComplete) vibrate([40, 60, 40, 60, 90]);
+    chime();
+  });
+});
+
+/* ---------- Εκκίνηση ---------- */
+buildLangSelect();
+applyMode();
+if ('ResizeObserver' in window) new ResizeObserver(() => buildSlots()).observe(rope);
+else window.addEventListener('resize', buildSlots);
+requestWake();
+})();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
