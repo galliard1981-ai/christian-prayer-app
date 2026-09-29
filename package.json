@@ -1,0 +1,16 @@
+{
+  "name": "christian-prayer-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Christian Prayer — Rope & Rosary (native Android app)",
+  "scripts": {
+    "build": "echo no-build-step"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/core": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.0.0"
+  }
+}

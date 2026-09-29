@@ -1,0 +1,6 @@
+{
+  "appId": "com.galliard.christianprayer",
+  "appName": "Christian Prayer",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
